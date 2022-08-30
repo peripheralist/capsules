@@ -1,14 +1,13 @@
 /* eslint no-use-before-define: "warn" */
 import chalk from "chalk";
-import { keccak256 } from "ethers/lib/utils";
 import fs from "fs";
 import { ethers } from "hardhat";
 
-import { fonts } from "../fonts";
 import { reservedColors } from "../reservedColors";
+import { fontHashes, fonts } from "../test/utils";
 import {
-  CapsulesRenderer,
-  CapsulesToken,
+  CapsuleRenderer,
+  CapsuleToken,
   CapsulesTypeface,
 } from "../typechain-types";
 
@@ -53,20 +52,13 @@ const writeFiles = (
 };
 
 const deployCapsulesTypeface = async (
-  capsulesTokenAddress: string
+  capsuleTokenAddress: string
 ): Promise<CapsulesTypeface> => {
   const deployer = await getDeployer();
-  const _fonts = Object.keys(fonts).map((weight) => ({
-    weight: parseInt(weight) as keyof typeof fonts,
-    style: "normal",
-  }));
-  const hashes = Object.values(fonts).map((font) =>
-    keccak256(Buffer.from(font))
-  );
 
   console.log("Deploying CapsulesTypeface with the account:", deployer.address);
 
-  const args = [_fonts, hashes, capsulesTokenAddress];
+  const args = [fonts, fontHashes, capsuleTokenAddress];
 
   console.log("Deploying with args:", args);
 
@@ -94,100 +86,130 @@ const deployCapsulesTypeface = async (
   return capsulesTypeface;
 };
 
-export async function deployCapsulesRenderer(capsulesTypefaceAddress: string) {
+export async function deployCapsuleMetadata() {
   const deployer = await getDeployer();
-  console.log("Deploying CapsulesRenderer with the account:", deployer.address);
+  console.log("Deploying CapsuleRenderer with the account:", deployer.address);
 
-  const CapsulesRenderer = await ethers.getContractFactory("CapsulesRenderer");
+  const CapsuleMetadata = await ethers.getContractFactory("CapsuleMetadata");
 
-  const args = [
-    capsulesTypefaceAddress
-  ]
-
-  const capsulesRenderer = (await CapsulesRenderer.deploy(
-    ...args
-  )) as CapsulesRenderer;
+  const capsuleMetadata = (await CapsuleMetadata.deploy()) as CapsuleRenderer;
 
   console.log(
-    chalk.green(` ✔ CapsulesRenderer deployed for network:`),
+    chalk.green(` ✔ CapsuleMetadata deployed for network:`),
     process.env.HARDHAT_NETWORK,
     "\n",
-    chalk.magenta(capsulesRenderer.address),
-    `tx: ${capsulesRenderer.deployTransaction.hash}`
+    chalk.magenta(capsuleMetadata.address),
+    `tx: ${capsuleMetadata.deployTransaction.hash}`
   );
 
   writeFiles(
-    "CapsulesRenderer",
-    capsulesRenderer.address,
+    "CapsuleMetadata",
+    capsuleMetadata.address,
+    [].map((a) => JSON.stringify(a))
+  );
+
+  return capsuleMetadata;
+}
+
+export async function deployCapsuleRenderer(capsulesTypefaceAddress: string) {
+  const deployer = await getDeployer();
+  console.log("Deploying CapsuleRenderer with the account:", deployer.address);
+
+  const CapsuleRenderer = await ethers.getContractFactory("CapsuleRenderer");
+
+  const args = [capsulesTypefaceAddress];
+
+  const capsuleRenderer = (await CapsuleRenderer.deploy(
+    ...args
+  )) as CapsuleRenderer;
+
+  console.log(
+    chalk.green(` ✔ CapsuleRenderer deployed for network:`),
+    process.env.HARDHAT_NETWORK,
+    "\n",
+    chalk.magenta(capsuleRenderer.address),
+    `tx: ${capsuleRenderer.deployTransaction.hash}`
+  );
+
+  writeFiles(
+    "CapsuleRenderer",
+    capsuleRenderer.address,
     args.map((a) => JSON.stringify(a))
   );
 
-  return capsulesRenderer;
+  return capsuleRenderer;
 }
 
-const deployCapsulesToken = async (
+const deployCapsuleToken = async (
   capsulesTypefaceAddress: string,
-  capsulesRendererAddress: string,
-): Promise<CapsulesToken> => {
+  capsuleRendererAddress: string,
+  capsuleMetadataAddress: string
+): Promise<CapsuleToken> => {
   const deployer = await getDeployer();
-  console.log("Deploying CapsulesToken with the account:", deployer.address);
+  console.log("Deploying CapsuleToken with the account:", deployer.address);
 
   const royalty = 50;
 
   const args = [
     capsulesTypefaceAddress,
-    capsulesRendererAddress,
+    capsuleRendererAddress,
+    capsuleMetadataAddress,
     feeReceiverAddress,
     reservedColors,
     royalty,
   ];
 
-  const Capsules = await ethers.getContractFactory("CapsulesToken");
+  const Capsules = await ethers.getContractFactory("CapsuleToken");
 
-  const capsulesToken = (await Capsules.deploy(...args)) as CapsulesToken;
+  const capsuleToken = (await Capsules.deploy(...args)) as CapsuleToken;
 
   console.log(
-    chalk.green(` ✔ CapsulesToken deployed for network:`),
+    chalk.green(` ✔ CapsuleToken deployed for network:`),
     process.env.HARDHAT_NETWORK,
     "\n",
-    chalk.magenta(capsulesToken.address),
-    `tx: ${capsulesToken.deployTransaction.hash}`
+    chalk.magenta(capsuleToken.address),
+    `tx: ${capsuleToken.deployTransaction.hash}`
   );
 
   writeFiles(
-    "CapsulesToken",
-    capsulesToken.address,
+    "CapsuleToken",
+    capsuleToken.address,
     args.map((a) => JSON.stringify(a))
   );
 
-  await capsulesToken.transferOwnership(ownerAddress);
+  await capsuleToken.transferOwnership(ownerAddress);
 
   console.log(
-    "Transferred CapsulesToken ownership to " + chalk.bold(ownerAddress)
+    "Transferred CapsuleToken ownership to " + chalk.bold(ownerAddress)
   );
 
-  return capsulesToken;
+  return capsuleToken;
 };
 
 const main = async () => {
+  console.log("✨ Deploying ✨");
+
+  console.log("Block number:", await ethers.provider.getBlockNumber());
+
   const deployer = await getDeployer();
   let nonce = await deployer.getTransactionCount();
-  const expectedCapsulesTokenAddress = ethers.utils.getContractAddress({
+  const expectedCapsuleTokenAddress = ethers.utils.getContractAddress({
     from: deployer.address,
     nonce: nonce + 2,
   });
 
   const capsulesTypeface = await deployCapsulesTypeface(
-    expectedCapsulesTokenAddress
+    expectedCapsuleTokenAddress
   );
 
-  const capsulesRenderer = await deployCapsulesRenderer(
-    capsulesTypeface.address
-  );
+  const capsuleRenderer = await deployCapsuleRenderer(capsulesTypeface.address);
 
-  await deployCapsulesToken(
+  const capsuleMetadata = await deployCapsuleMetadata();
+
+  await deployCapsuleToken(
     capsulesTypeface.address,
-    capsulesRenderer.address,
+    capsuleRenderer.address,
+    capsuleMetadata.address
   );
 
   console.log("Done");

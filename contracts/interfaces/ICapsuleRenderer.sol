@@ -4,15 +4,10 @@
 
 pragma solidity ^0.8.13;
 
-import "./ICapsulesToken.sol";
+import "./ICapsuleToken.sol";
 
-interface ICapsulesRenderer {
-    function tokenUri(Capsule memory capsule)
-        external
-        view
-        returns (string memory);
-
-    function svgOf(Capsule memory capsule, bool square)
+interface ICapsuleRenderer {
+    function svgOf(Capsule memory capsule)
         external
         view
         returns (string memory);

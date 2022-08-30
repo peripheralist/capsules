@@ -1,5 +1,5 @@
 {
-      "address": "0x9284967016297378b4DC673F2227Fc88232878DD", 
+      "address": "0x181FD117960f97fC099633DB200D297446ee7C7a", 
       "abi": [
   {
     "inputs": [
@@ -10,7 +10,7 @@
       },
       {
         "internalType": "address",
-        "name": "_capsulesMetadata",
+        "name": "_capsulesRenderer",
         "type": "address"
       },
       {
@@ -64,7 +64,7 @@
   },
   {
     "inputs": [],
-    "name": "CapsuleMetadataLocked",
+    "name": "CapsuleRendererLocked",
     "type": "error"
   },
   {
@@ -212,12 +212,6 @@
         "internalType": "uint256",
         "name": "id",
         "type": "uint256"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "fontWeight",
-        "type": "uint256"
       }
     ],
     "name": "EditCapsule",
@@ -239,7 +233,7 @@
   {
     "anonymous": false,
     "inputs": [],
-    "name": "LockMetadata",
+    "name": "LockRenderer",
     "type": "event"
   },
   {
@@ -262,12 +256,6 @@
         "internalType": "bytes3",
         "name": "color",
         "type": "bytes3"
-      },
-      {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "fontWeight",
-        "type": "uint256"
       }
     ],
     "name": "MintCapsule",
@@ -311,11 +299,11 @@
       {
         "indexed": false,
         "internalType": "address",
-        "name": "_capsulesMetadata",
+        "name": "_capsulesRenderer",
         "type": "address"
       }
     ],
-    "name": "SetCapsulesMetadata",
+    "name": "SetCapsulesRenderer",
     "type": "event"
   },
   {
@@ -530,7 +518,7 @@
   },
   {
     "inputs": [],
-    "name": "capsulesMetadata",
+    "name": "capsulesRenderer",
     "outputs": [
       {
         "internalType": "address",
@@ -748,22 +736,9 @@
   },
   {
     "inputs": [],
-    "name": "lockMetadata",
+    "name": "lockRenderer",
     "outputs": [],
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "metadataLocked",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -948,6 +923,19 @@
   },
   {
     "inputs": [],
+    "name": "rendererLocked",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "renounceOwnership",
     "outputs": [],
     "stateMutability": "nonpayable",
@@ -1068,11 +1056,11 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_capsulesMetadata",
+        "name": "_capsulesRenderer",
         "type": "address"
       }
     ],
-    "name": "setCapsulesMetadata",
+    "name": "setCapsulesRenderer",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

@@ -4,25 +4,31 @@
 
 pragma solidity ^0.8.0;
 
-import "./interfaces/ICapsulesToken.sol";
+import "./interfaces/ICapsuleToken.sol";
 import "./Typeface.sol";
 
 contract CapsulesTypeface is Typeface {
     /// Address of Capsules Token contract
-    ICapsulesToken public immutable capsulesToken;
+    ICapsuleToken public immutable capsuleToken;
 
     constructor(
         Font[] memory fonts,
         bytes32[] memory hashes,
-        address _capsulesToken
+        address _capsuleToken
     ) Typeface("Capsules") {
-        _setFontSrcHash(fonts, hashes);
+        _setFontSourceHashes(fonts, hashes);
 
-        capsulesToken = ICapsulesToken(_capsulesToken);
+        capsuleToken = ICapsuleToken(_capsuleToken);
     }
 
-    /// @notice Returns true if byte is supported by this typeface
-    function isAllowedChar(bytes4 b) external pure returns (bool) {
+    function isSupportedByte(bytes1) external pure returns (bool) {
+        // TODO
+        return true;
+        // All basic Latin letters, digits, symbols, punctuation
+        // return b >= 0x00000020 && b <= 0x0000007E;
+    }
+
+    function isSupportedBytes4(bytes4) external pure returns (bool) {
         // TODO
         return true;
         // All basic Latin letters, digits, symbols, punctuation
@@ -30,10 +36,10 @@ contract CapsulesTypeface is Typeface {
     }
 
     /// @notice Mint pure color Capsule token to caller when caller sets fontSrc
-    function afterSetSource(Font memory font, bytes memory)
+    function _afterSetSource(Font calldata font, bytes calldata)
         internal
         override(Typeface)
     {
-        capsulesToken.mintPureColorForFontWeight(msg.sender, font.weight);
+        capsuleToken.mintPureColorForFontWeight(msg.sender, font.weight);
     }
 }

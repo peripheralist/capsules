@@ -4,11 +4,15 @@ import { keccak256 } from "ethers/lib/utils";
 import * as fs from "fs";
 import { ethers } from "hardhat";
 
-import { fonts } from "../fonts";
+import { FONTS } from "../fonts";
 import { reservedColors } from "../reservedColors";
-import { CapsulesRenderer, CapsulesToken } from "../typechain-types";
+import {
+  CapsuleMetadata,
+  CapsuleRenderer,
+  CapsuleToken,
+} from "../typechain-types";
 import { CapsulesTypeface } from "../typechain-types/CapsulesTypeface";
-import { capsulesRenderer, capsulesToken, capsulesTypeface } from "./Capsules";
+import { capsuleRenderer, capsuleToken, capsulesTypeface } from "./Capsules";
 
 export const mintPrice = ethers.utils.parseEther("0.01");
 
@@ -17,6 +21,15 @@ export const maxSupply = 7957;
 export const totalSupply = async () => await capsulesContract().totalSupply();
 
 export const indent = "      " + chalk.bold("- ");
+
+export const fonts = Object.keys(FONTS).map((weight) => ({
+  weight: parseInt(weight) as keyof typeof FONTS,
+  style: "normal",
+}));
+
+export const fontHashes = Object.values(FONTS).map((font) =>
+  keccak256(Buffer.from(font))
+);
 
 export const textToBytes4Lines = (text: string[]) => {
   const lines = [];
@@ -103,12 +116,12 @@ export async function wallets() {
   return { deployer, owner, feeReceiver, minter1, minter2 };
 }
 
-export async function deployCapsulesTypeface(capsulesTokenAddress: string) {
-  const _fonts = Object.keys(fonts).map((weight) => ({
-    weight: parseInt(weight) as keyof typeof fonts,
+export async function deployCapsulesTypeface(capsuleTokenAddress: string) {
+  const _fonts = Object.keys(FONTS).map((weight) => ({
+    weight: parseInt(weight) as keyof typeof FONTS,
     style: "normal",
   }));
-  const hashes = Object.values(fonts).map((font) =>
+  const hashes = Object.values(FONTS).map((font) =>
     keccak256(Buffer.from(font))
   );
 
@@ -118,7 +131,7 @@ export async function deployCapsulesTypeface(capsulesTokenAddress: string) {
   const capsulesTypeface = (await CapsulesTypeface.deploy(
     _fonts,
     hashes,
-    capsulesTokenAddress
+    capsuleTokenAddress
   )) as CapsulesTypeface;
 
   console.log(
@@ -130,73 +143,89 @@ export async function deployCapsulesTypeface(capsulesTokenAddress: string) {
   return capsulesTypeface;
 }
 
-export async function deployCapsulesToken(
+export async function deployCapsuleToken(
   capsulesTypefaceAddress: string,
-  capsulesRendererAddress: string
+  capsuleRendererAddress: string,
+  capsuleMetadataAddress: string
 ) {
   const { feeReceiver, owner } = await wallets();
-  const Capsules = await ethers.getContractFactory("CapsulesToken");
+  const Capsules = await ethers.getContractFactory("CapsuleToken");
 
   const royalty = 50;
 
   const capsules = (await Capsules.deploy(
     capsulesTypefaceAddress,
-    capsulesRendererAddress,
+    capsuleRendererAddress,
+    capsuleMetadataAddress,
     feeReceiver.address,
     reservedColors,
     royalty
-  )) as CapsulesToken;
+  )) as CapsuleToken;
 
   await capsules.transferOwnership(owner.address);
 
   console.log(
-    indent + "Deployed CapsulesToken " + chalk.magenta(capsules.address)
+    indent + "Deployed CapsuleToken " + chalk.magenta(capsules.address)
   );
 
   return capsules;
 }
 
-export async function deployCapsulesRenderer(capsulesTypefaceAddress: string) {
-  const CapsulesRenderer = await ethers.getContractFactory("CapsulesRenderer");
+export async function deployCapsuleRenderer(capsulesTypefaceAddress: string) {
+  const CapsuleRenderer = await ethers.getContractFactory("CapsuleRenderer");
 
-  const capsulesRenderer = (await CapsulesRenderer.deploy(
+  const capsuleRenderer = (await CapsuleRenderer.deploy(
     capsulesTypefaceAddress
-  )) as CapsulesRenderer;
+  )) as CapsuleRenderer;
 
   console.log(
     indent +
-      "Deployed CapsulesRenderer " +
-      chalk.magenta(capsulesRenderer.address)
+      "Deployed CapsuleRenderer " +
+      chalk.magenta(capsuleRenderer.address)
   );
 
-  return capsulesRenderer;
+  return capsuleRenderer;
+}
+
+export async function deployCapsuleMetadata() {
+  const CapsuleMetadata = await ethers.getContractFactory("CapsuleMetadata");
+
+  const capsuleMetadata = (await CapsuleMetadata.deploy()) as CapsuleMetadata;
+
+  console.log(
+    indent +
+      "Deployed CapsuleMetadata " +
+      chalk.magenta(capsuleMetadata.address)
+  );
+
+  return capsuleMetadata;
 }
 
 export const capsulesContract = (signer?: Signer) =>
   new Contract(
-    capsulesToken.address,
+    capsuleToken.address,
     JSON.parse(
       fs
         .readFileSync(
-          "./artifacts/contracts/CapsulesToken.sol/CapsulesToken.json"
+          "./artifacts/contracts/CapsuleToken.sol/CapsuleToken.json"
         )
         .toString()
     ).abi,
     signer ?? ethers.provider
-  ) as CapsulesToken;
+  ) as CapsuleToken;
 
-export const capsulesRendererContract = (signer?: Signer) =>
+export const capsuleRendererContract = (signer?: Signer) =>
   new Contract(
-    capsulesRenderer.address,
+    capsuleRenderer.address,
     JSON.parse(
       fs
         .readFileSync(
-          "./artifacts/contracts/CapsulesRenderer.sol/CapsulesRenderer.json"
+          "./artifacts/contracts/CapsuleRenderer.sol/CapsuleRenderer.json"
         )
         .toString()
     ).abi,
     signer ?? ethers.provider
-  ) as CapsulesRenderer;
+  ) as CapsuleRenderer;
 
 export const capsulesTypefaceContract = (signer?: Signer) =>
   new Contract(

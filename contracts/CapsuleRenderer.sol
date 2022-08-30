@@ -1,17 +1,17 @@
 // SPDX-License-Identifier: GPL-3.0
 
-/// @title Capsules Token
+/// @title Capsules Renderer
+
 /// @author peri
-/// @notice Each Capsule token has a unique color and a custom text rendered as a SVG. The text for a Capsule can be updated at any time by its owner.
-/// @dev bytes3 type is used to store the 3 bytes of the rgb hex-encoded color that is unique to each capsule.
+
+/// @notice Renders SVG images for Capsules tokens.
 
 pragma solidity 0.8.14;
 
-import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "./interfaces/ITypeface.sol";
-import "./interfaces/ICapsulesToken.sol";
-import "./interfaces/ICapsulesRenderer.sol";
+import "./interfaces/ICapsuleRenderer.sol";
+import "./interfaces/ICapsuleToken.sol";
 import "./utils/Base64.sol";
 
 struct SvgSpecs {
@@ -31,7 +31,7 @@ struct SvgSpecs {
     uint256 textAreaHeightDots;
 }
 
-contract CapsulesRenderer is Ownable, ICapsulesRenderer {
+contract CapsuleRenderer is ICapsuleRenderer {
     /// Address of CapsulesTypeface contract
     address public immutable capsulesTypeface;
 
@@ -39,41 +39,19 @@ contract CapsulesRenderer is Ownable, ICapsulesRenderer {
         capsulesTypeface = _capsulesTypeface;
     }
 
-    function tokenUri(Capsule memory capsule)
+    /// @notice Return Base64-encoded square SVG for Capsule
+    /// @param capsule Capsule to return SVG for
+    /// @return svg SVG for Capsule
+    function svgOf(Capsule memory capsule)
         external
         view
         returns (string memory)
     {
-        string memory pureText = "no";
-        string memory lockedText = "no";
-        if (capsule.isPure) pureText = "yes";
-        if (capsule.isLocked) lockedText = "yes";
-
-        return
-            string(
-                abi.encodePacked(
-                    "data:application/json;base64,",
-                    Base64.encode(
-                        abi.encodePacked(
-                            '{"name": "Capsule ',
-                            Strings.toString(capsule.id),
-                            '", "description": "7,957 tokens with unique colors and editable text rendered on-chain. 7 pure colors are reserved for wallets that pay gas to store one of the 7 Capsules font weights in the CapsulesTypeface contract.", "image": "',
-                            svgOf(capsule, true),
-                            '", "attributes": [{"trait_type": "Color", "value": "#',
-                            _bytes3ToHexChars(capsule.color),
-                            '"}, {"pure": "',
-                            pureText,
-                            '}, {"locked": "',
-                            lockedText,
-                            '"}]}'
-                        )
-                    )
-                )
-            );
+        return svgOf(capsule, true);
     }
 
     /// @notice Return Base64-encoded SVG for Capsule
-    /// @param capsule Capsule to return image for
+    /// @param capsule Capsule to return SVG for
     /// @param square Fit image to square with content centered
     /// @return base64Svg Base64-encoded SVG for Capsule
     function svgOf(Capsule memory capsule, bool square)
@@ -232,7 +210,7 @@ contract CapsulesRenderer is Ownable, ICapsulesRenderer {
                     '" class="capsules-',
                     Strings.toString(capsule.fontWeight),
                     '">',
-                    htmlSafeLine(capsule.text[i]),
+                    _htmlSafeLine(capsule.text[i]),
                     "</text>"
                 );
             }
@@ -403,7 +381,7 @@ contract CapsulesRenderer is Ownable, ICapsulesRenderer {
         returns (string[8] memory safeText)
     {
         for (uint256 i; i < 8; i++) {
-            safeText[i] = htmlSafeLine(text[i]);
+            safeText[i] = _htmlSafeLine(text[i]);
         }
     }
 
@@ -411,7 +389,7 @@ contract CapsulesRenderer is Ownable, ICapsulesRenderer {
     /// @dev Iterates through each byte in line of text and replaces each byte as needed to create a string that will render in html without issue. Ensures that no illegal characters or 0x00 bytes remain.
     /// @param line Line of text to render safe.
     /// @return safeLine Text string that can be safely rendered in html.
-    function htmlSafeLine(bytes4[16] memory line)
+    function _htmlSafeLine(bytes4[16] memory line)
         internal
         pure
         returns (string memory safeLine)

@@ -16,19 +16,21 @@ struct Capsule {
     bool isLocked;
 }
 
-interface ICapsulesToken {
+interface ICapsuleToken {
     event MintCapsule(
         uint256 indexed id,
         address indexed to,
         bytes3 indexed color
     );
-    event SetCapsulesRenderer(address _capsulesRenderer);
-    event SetCreatorFeeReceiver(address _address);
+    event SetDefaultCapsuleRenderer(address renderer);
+    event SetCapsuleMetadata(address metadata);
+    event SetFeeReceiver(address receiver);
     event SetPureColors(bytes3[] colors);
     event SetRoyalty(uint256 royalty);
     event LockRenderer();
-    event LockCapsule(uint256 capsuleId);
+    event LockCapsule(uint256 indexed id);
     event EditCapsule(uint256 indexed id);
+    event SetRendererOf(uint256 indexed id, address renderer);
     event Withdraw(address to, uint256 amount);
 
     function capsuleOf(uint256 capsuleId)
@@ -61,10 +63,7 @@ interface ICapsulesToken {
 
     function isLocked(uint256 capsuleId) external view returns (bool locked);
 
-    function svgOf(uint256 capsuleId, bool square)
-        external
-        view
-        returns (string memory);
+    function svgOf(uint256 capsuleId) external view returns (string memory);
 
     function mint(bytes3 color, uint256 fontWeight)
         external
@@ -92,11 +91,13 @@ interface ICapsulesToken {
         bool lock
     ) external;
 
+    function setRendererOf(uint256 capsuleId, address renderer) external;
+
     function burn(uint256 capsuleId) external;
 
-    function setCapsulesRenderer(address _capsulesRenderer) external;
+    function setDefaultCapsuleRenderer(address _capsuleRenderer) external;
 
-    function setCreatorFeeReceiver(address _creatorFeeReceiver) external;
+    function setFeeReceiver(address _feeReceiver) external;
 
     function setRoyalty(uint256 _royalty) external;
 
