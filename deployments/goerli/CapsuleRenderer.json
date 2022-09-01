@@ -1,0 +1,155 @@
+{
+      "address": "0xE62B67b1d820747aE7d8B28E13e0FED844774CF5", 
+      "abi": [
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_capsulesTypeface",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "inputs": [],
+    "name": "capsulesTypeface",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes4[16][8]",
+        "name": "text",
+        "type": "bytes4[16][8]"
+      }
+    ],
+    "name": "htmlSafeText",
+    "outputs": [
+      {
+        "internalType": "string[8]",
+        "name": "safeText",
+        "type": "string[8]"
+      }
+    ],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "id",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bytes3",
+            "name": "color",
+            "type": "bytes3"
+          },
+          {
+            "internalType": "uint256",
+            "name": "fontWeight",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bytes4[16][8]",
+            "name": "text",
+            "type": "bytes4[16][8]"
+          },
+          {
+            "internalType": "bool",
+            "name": "isPure",
+            "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "isLocked",
+            "type": "bool"
+          }
+        ],
+        "internalType": "struct Capsule",
+        "name": "capsule",
+        "type": "tuple"
+      }
+    ],
+    "name": "svgOf",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "id",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bytes3",
+            "name": "color",
+            "type": "bytes3"
+          },
+          {
+            "internalType": "uint256",
+            "name": "fontWeight",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bytes4[16][8]",
+            "name": "text",
+            "type": "bytes4[16][8]"
+          },
+          {
+            "internalType": "bool",
+            "name": "isPure",
+            "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "isLocked",
+            "type": "bool"
+          }
+        ],
+        "internalType": "struct Capsule",
+        "name": "capsule",
+        "type": "tuple"
+      },
+      {
+        "internalType": "bool",
+        "name": "square",
+        "type": "bool"
+      }
+    ],
+    "name": "svgOf",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "base64Svg",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]
+  }

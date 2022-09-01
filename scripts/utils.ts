@@ -11,16 +11,15 @@ import {
   CapsuleRenderer,
   CapsuleToken,
 } from "../typechain-types";
+import { CapsulesToken } from "../typechain-types/CapsulesToken";
 import { CapsulesTypeface } from "../typechain-types/CapsulesTypeface";
-import { capsuleRenderer, capsuleToken, capsulesTypeface } from "./Capsules";
 
 export const mintPrice = ethers.utils.parseEther("0.01");
 
 export const maxSupply = 7957;
 
-export const totalSupply = async () => await capsulesContract().totalSupply();
-
-export const indent = "      " + chalk.bold("- ");
+// export const totalSupply = async (capsulesTokenAddress: string) =>
+//   await signingContract(capsulesTokenAddress).totalSupply();
 
 export const fonts = Object.keys(FONTS).map((weight) => ({
   weight: parseInt(weight) as keyof typeof FONTS,
@@ -58,12 +57,13 @@ export async function skipToBlockNumber(seconds: number) {
 }
 
 export async function mintValidUnlockedCapsules(
+  capsulesToken: CapsulesToken,
   signer: Signer,
   count?: number
 ) {
   let hexes: string[] = [];
 
-  const capsules = capsulesContract(signer);
+  const capsules = signingContract(capsulesToken, signer);
 
   const toHex = (num: number) =>
     BigNumber.from(num).toHexString().split("0x")[1];
@@ -90,7 +90,7 @@ export async function mintValidUnlockedCapsules(
       : validHexes.length;
 
   const startTime = new Date().valueOf();
-  process.stdout.write(`${indent}Minting Capsules... 0/${_count}`);
+  process.stdout.write(`Minting Capsules... 0/${_count}`);
 
   for (let i = 0; i < _count; i++) {
     await capsules
@@ -99,12 +99,12 @@ export async function mintValidUnlockedCapsules(
         gasLimit: 30000000,
       })
       .then(() => {
-        process.stdout.cursorTo(indent.length + 11);
+        process.stdout.cursorTo(11);
         process.stdout.write(`${i + 1}/${_count}`);
       });
   }
 
-  process.stdout.cursorTo(indent.length + 21);
+  process.stdout.cursorTo(21);
   process.stdout.write(`(${new Date().valueOf() - startTime}ms)`);
   process.stdout.write("\n");
 }
@@ -117,6 +117,8 @@ export async function wallets() {
 }
 
 export async function deployCapsulesTypeface(capsuleTokenAddress: string) {
+  console.log("🪄 Deploying CapsulesTypeface...");
+
   const _fonts = Object.keys(FONTS).map((weight) => ({
     weight: parseInt(weight) as keyof typeof FONTS,
     style: "normal",
@@ -125,117 +127,110 @@ export async function deployCapsulesTypeface(capsuleTokenAddress: string) {
     keccak256(Buffer.from(font))
   );
 
-  console.log("fonts", { _fonts, hashes });
+  const args = [_fonts, hashes, capsuleTokenAddress];
 
   const CapsulesTypeface = await ethers.getContractFactory("CapsulesTypeface");
   const capsulesTypeface = (await CapsulesTypeface.deploy(
-    _fonts,
-    hashes,
-    capsuleTokenAddress
+    ...args
   )) as CapsulesTypeface;
 
   console.log(
-    indent +
-      "Deployed CapsulesTypeface " +
-      chalk.magenta(capsulesTypeface.address)
+    "✅ Deployed CapsulesTypeface " + chalk.magenta(capsulesTypeface.address)
   );
 
-  return capsulesTypeface;
+  return { contract: capsulesTypeface, args };
 }
 
 export async function deployCapsuleToken(
   capsulesTypefaceAddress: string,
   capsuleRendererAddress: string,
-  capsuleMetadataAddress: string
+  capsuleMetadataAddress: string,
+  ownerAddress: string,
+  feeReceiverAddress: string
 ) {
-  const { feeReceiver, owner } = await wallets();
+  console.log("🪄 Deploying CapsuleToken...");
+
   const Capsules = await ethers.getContractFactory("CapsuleToken");
 
   const royalty = 50;
 
-  const capsules = (await Capsules.deploy(
+  const args = [
     capsulesTypefaceAddress,
     capsuleRendererAddress,
     capsuleMetadataAddress,
-    feeReceiver.address,
+    feeReceiverAddress,
     reservedColors,
-    royalty
-  )) as CapsuleToken;
+    royalty,
+  ];
 
-  await capsules.transferOwnership(owner.address);
+  const deployedContract = (await Capsules.deploy(...args)) as CapsuleToken;
 
   console.log(
-    indent + "Deployed CapsuleToken " + chalk.magenta(capsules.address)
+    "✅ Deployed CapsuleToken " + chalk.magenta(deployedContract.address)
   );
 
-  return capsules;
+  console.log(
+    `Transferring ownership of CapsuleToken to ${chalk.cyan(ownerAddress)}...`
+  );
+
+  await deployedContract.transferOwnership(ownerAddress);
+
+  console.log("➡️  Transfer complete");
+
+  return { contract: deployedContract, args };
 }
 
 export async function deployCapsuleRenderer(capsulesTypefaceAddress: string) {
+  console.log("🪄 Deploying CapsuleRenderer...");
+
   const CapsuleRenderer = await ethers.getContractFactory("CapsuleRenderer");
 
+  const args = [capsulesTypefaceAddress];
+
   const capsuleRenderer = (await CapsuleRenderer.deploy(
-    capsulesTypefaceAddress
+    ...args
   )) as CapsuleRenderer;
 
   console.log(
-    indent +
-      "Deployed CapsuleRenderer " +
-      chalk.magenta(capsuleRenderer.address)
+    "✅ Deployed CapsuleRenderer " + chalk.magenta(capsuleRenderer.address)
   );
 
-  return capsuleRenderer;
+  return { contract: capsuleRenderer, args };
 }
 
 export async function deployCapsuleMetadata() {
+  console.log("🪄 Deploying CapsuleMetadata...");
+
   const CapsuleMetadata = await ethers.getContractFactory("CapsuleMetadata");
 
   const capsuleMetadata = (await CapsuleMetadata.deploy()) as CapsuleMetadata;
 
   console.log(
-    indent +
-      "Deployed CapsuleMetadata " +
-      chalk.magenta(capsuleMetadata.address)
+    "✅ Deployed CapsuleMetadata " + chalk.magenta(capsuleMetadata.address)
   );
 
-  return capsuleMetadata;
+  return { contract: capsuleMetadata, args: [] };
 }
 
-export const capsulesContract = (signer?: Signer) =>
+export const signingContract = <C extends Contract>(
+  contract: C,
+  signer?: Signer
+) =>
   new Contract(
-    capsuleToken.address,
-    JSON.parse(
-      fs
-        .readFileSync(
-          "./artifacts/contracts/CapsuleToken.sol/CapsuleToken.json"
-        )
-        .toString()
-    ).abi,
+    contract.address,
+    contract.interface,
     signer ?? ethers.provider
-  ) as CapsuleToken;
+  ) as C;
 
-export const capsuleRendererContract = (signer?: Signer) =>
-  new Contract(
-    capsuleRenderer.address,
-    JSON.parse(
-      fs
-        .readFileSync(
-          "./artifacts/contracts/CapsuleRenderer.sol/CapsuleRenderer.json"
-        )
-        .toString()
-    ).abi,
-    signer ?? ethers.provider
-  ) as CapsuleRenderer;
-
-export const capsulesTypefaceContract = (signer?: Signer) =>
-  new Contract(
-    capsulesTypeface.address,
-    JSON.parse(
-      fs
-        .readFileSync(
-          "./artifacts/contracts/CapsulesTypeface.sol/CapsulesTypeface.json"
-        )
-        .toString()
-    ).abi,
-    signer ?? ethers.provider
-  ) as CapsulesTypeface;
+// export const capsulesContract = (address: string, signer?: Signer) =>
+//   new Contract(
+//     address,
+//     JSON.parse(
+//       fs
+//         .readFileSync(
+//           "./artifacts/contracts/CapsuleToken.sol/CapsuleToken.json"
+//         )
+//         .toString()
+//     ).abi,
+//     signer ?? ethers.provider
+//   ) as CapsuleToken;

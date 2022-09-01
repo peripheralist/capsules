@@ -1,5 +1,5 @@
 {
-      "address": "0xC216bd095176D23FE7473F97B1dB03fDb48837a6", 
+      "address": "0x59DC26318AdAb66C2Ae4bf114C8D756118bC69b5", 
       "abi": [
   {
     "inputs": [
@@ -27,7 +27,7 @@
       },
       {
         "internalType": "address",
-        "name": "_capsulesToken",
+        "name": "_capsuleToken",
         "type": "address"
       }
     ],
@@ -54,12 +54,6 @@
         "internalType": "struct Font",
         "name": "font",
         "type": "tuple"
-      },
-      {
-        "indexed": false,
-        "internalType": "bytes",
-        "name": "source",
-        "type": "bytes"
       }
     ],
     "name": "SetSource",
@@ -98,10 +92,10 @@
   },
   {
     "inputs": [],
-    "name": "capsulesToken",
+    "name": "capsuleToken",
     "outputs": [
       {
-        "internalType": "contract ICapsulesToken",
+        "internalType": "contract ICapsuleToken",
         "name": "",
         "type": "address"
       }
@@ -143,12 +137,31 @@
   {
     "inputs": [
       {
+        "internalType": "bytes1",
+        "name": "",
+        "type": "bytes1"
+      }
+    ],
+    "name": "isSupportedByte",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "bytes4",
-        "name": "b",
+        "name": "",
         "type": "bytes4"
       }
     ],
-    "name": "isAllowedChar",
+    "name": "isSupportedBytes4",
     "outputs": [
       {
         "internalType": "bool",
@@ -197,7 +210,7 @@
         "type": "bytes"
       }
     ],
-    "name": "setFontSrc",
+    "name": "setSource",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

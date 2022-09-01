@@ -1,0 +1,61 @@
+{
+      "address": "0x92d10996C1d543Ea01acd31CE28CF3797aE995CE", 
+      "abi": [
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "id",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bytes3",
+            "name": "color",
+            "type": "bytes3"
+          },
+          {
+            "internalType": "uint256",
+            "name": "fontWeight",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bytes4[16][8]",
+            "name": "text",
+            "type": "bytes4[16][8]"
+          },
+          {
+            "internalType": "bool",
+            "name": "isPure",
+            "type": "bool"
+          },
+          {
+            "internalType": "bool",
+            "name": "isLocked",
+            "type": "bool"
+          }
+        ],
+        "internalType": "struct Capsule",
+        "name": "capsule",
+        "type": "tuple"
+      },
+      {
+        "internalType": "string",
+        "name": "image",
+        "type": "string"
+      }
+    ],
+    "name": "tokenUri",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "pure",
+    "type": "function"
+  }
+]
+  }
