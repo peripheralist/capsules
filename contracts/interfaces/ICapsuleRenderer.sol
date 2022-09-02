@@ -1,6 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0
 
-/// @title Interface for Capsules Renderer
+/// @title ICapsuleRenderer
+
+/// @author peri
+
+/// @notice Interface for CapsuleRenderer contract
 
 pragma solidity ^0.8.13;
 

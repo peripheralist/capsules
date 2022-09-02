@@ -61,6 +61,18 @@ const main = async () => {
 
   console.log("");
 
+  // Deploy CapsuleMetadata
+  const { contract: capsuleMetadata } = await deployCapsuleMetadata().then(
+    (x) => {
+      writeFiles(
+        "CapsuleMetadata",
+        x.contract.address,
+        x.args.map((a) => JSON.stringify(a))
+      );
+      return x;
+    }
+  );
+
   let nonce = await deployer.getTransactionCount();
   const expectedCapsuleTokenAddress = ethers.utils.getContractAddress({
     from: deployer.address,
@@ -90,18 +102,6 @@ const main = async () => {
     );
     return x;
   });
-
-  // Deploy CapsuleMetadata
-  const { contract: capsuleMetadata } = await deployCapsuleMetadata().then(
-    (x) => {
-      writeFiles(
-        "CapsuleMetadata",
-        x.contract.address,
-        x.args.map((a) => JSON.stringify(a))
-      );
-      return x;
-    }
-  );
 
   // Deploy CapsuleToken
   await deployCapsuleToken(

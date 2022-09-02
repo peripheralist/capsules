@@ -56,7 +56,7 @@ contract CapsuleToken is
 
     /// @notice Require that the text is valid
     modifier onlyValidText(bytes4[16][8] memory text) {
-        if (!_isValidText(text)) revert InvalidText();
+        if (!isValidText(text)) revert InvalidText();
         _;
     }
 
@@ -86,7 +86,7 @@ contract CapsuleToken is
         _;
     }
 
-    /// @notice Require that the capsule is unlocked
+    /// @notice Require that the Capsule is unlocked
     modifier onlyUnlockedCapsule(uint256 capsuleId) {
         if (isLocked(capsuleId)) revert CapsuleLocked();
         _;
@@ -102,6 +102,11 @@ contract CapsuleToken is
     /* -------------------------------------------------------------------------- */
     /* ------------------------------- CONSTRUCTOR ------------------------------ */
     /* -------------------------------------------------------------------------- */
+    /*  000    OOO   O   0   OOO0  OOOOO  OOOO   O   O   OOO   0OOOO  000   0000  */
+    /* O   O  O   O  O0  O  0        0    0   0  O   0  O   O    0   0   0  0   0 */
+    /* O      O   O  O 0 O   0O0     O    00O0   O   0  O        O   0   0  0000  */
+    /* O   O  O   O  O  0O      0    0    0  0   O   0  O   0    0   0   0  0  0  */
+    /*  000    OOO   O   0  OOO0     0    O   0   OOO    00O     O    000   0   0 */
 
     constructor(
         address _capsulesTypeface,
@@ -125,6 +130,11 @@ contract CapsuleToken is
     /* -------------------------------------------------------------------------- */
     /* -------------------------------- VARIABLES ------------------------------- */
     /* -------------------------------------------------------------------------- */
+    /*       O   O   OOO   OOOO   OOOOO   OOO   OOOO   O      OOOO0   OOOO        */
+    /*       O   O  O   O  O   O    O    O   0  O   0  O      O      O            */
+    /*       O   O  O000O  O000     O    OOOOO  O000   O      OOOO    OOO         */
+    /*        0 0   O   O  O  O     O    O   0  O   0  O      O          O        */
+    /*         0    0   0  0   O  OOOOO  O   0  OOOO   OOOOO  O0000  OOOO         */
 
     /// Price to mint a Capsule
     uint256 public constant MINT_PRICE = 1e16; // 0.01 ETH
@@ -168,6 +178,11 @@ contract CapsuleToken is
     /* -------------------------------------------------------------------------- */
     /* --------------------------- EXTERNAL FUNCTIONS --------------------------- */
     /* -------------------------------------------------------------------------- */
+    /*           O000O  0   0  OOOO0  OOOOO  OOOO   O   O   OOO   O               */
+    /*           O       0 0     0    O      O   0  00  0  O   0  O               */
+    /*           O00O     0      0    O000   OOOO   0 O 0  OOOOO  O               */
+    /*           O       0 0     0    O      O  0   0  00  O   0  O               */
+    /*           O0000  0   0    O    OOOOO  O   0  O   0  O   0  O0000           */
 
     /// @notice Mints a Capsule to sender, saving gas by not setting text.
     /// @dev Requires active sale, min value of `MINT_PRICE`, valid font weight, unminted & impure color.
@@ -185,7 +200,7 @@ contract CapsuleToken is
         return _mintCapsule(msg.sender, color, fontWeight);
     }
 
-    /// @notice Mint a Capsule to sender while setting its text.
+    /// @notice Mint a Capsule to sender while setting its text. Saves gas by skipping text validation.
     /// @dev Requires active sale, min value of `MINT_PRICE`, valid font weight, unminted & impure color.
     /// @param color Color for Capsule.
     /// @param fontWeight FontWeight of Capsule.
@@ -195,27 +210,22 @@ contract CapsuleToken is
         bytes3 color,
         uint256 fontWeight,
         bytes4[16][8] calldata text
-    )
-        external
-        payable
-        whenNotPaused
-        requireMintPrice
-        onlyMintableColor(color)
-        onlyImpureColor(color)
-        onlyValidFontWeight(fontWeight)
-        onlyValidText(text)
-        nonReentrant
-        returns (uint256 capsuleId)
-    {
-        address to = msg.sender;
+    ) external payable nonReentrant returns (uint256 capsuleId) {
+        return _mintWithText(color, fontWeight, text);
+    }
 
-        _mint(to, 1, new bytes(0), false);
-
-        capsuleId = _storeNewCapsuleData(color, fontWeight);
-
-        _textOf[capsuleId] = text;
-
-        emit MintCapsule(capsuleId, to, color);
+    /// @notice Mint a Capsule to sender while setting its text. Requires more gas to validate text.
+    /// @dev Requires active sale, min value of `MINT_PRICE`, valid font weight, unminted & impure color.
+    /// @param color Color for Capsule.
+    /// @param fontWeight FontWeight of Capsule.
+    /// @param text Text for Capsule. 8 lines of 16 bytes3 characters in 2d array.
+    /// @return capsuleId ID of minted Capsule.
+    function mintWithValidText(
+        bytes3 color,
+        uint256 fontWeight,
+        bytes4[16][8] calldata text
+    ) external payable onlyValidText(text) nonReentrant returns (uint256) {
+        return _mintWithText(color, fontWeight, text);
     }
 
     /// @notice Mint a Capsule to sender.
@@ -254,9 +264,7 @@ contract CapsuleToken is
     /// @return svg SVG image of Capsule.
     function svgOf(uint256 capsuleId) public view returns (string memory) {
         return
-            ICapsuleRenderer(rendererOf(capsuleId)).svgOf(
-                capsuleOf(capsuleId)
-            );
+            ICapsuleRenderer(rendererOf(capsuleId)).svgOf(capsuleOf(capsuleId));
     }
 
     /// @notice Returns all data for Capsule token with ID.
@@ -371,6 +379,32 @@ contract CapsuleToken is
         emit Withdraw(feeReceiver, balance);
     }
 
+    /// @notice Check if text is valid.
+    /// @dev Text is valid if every bytes is supported by CapsulesTypeface, or is 0x00.
+    /// @param text Text to check validity of. 8 lines of 16 bytes3 characters in 2d array.
+    /// @return true True if text is valid.
+    function isValidText(bytes4[16][8] memory text) public view returns (bool) {
+        unchecked {
+            for (uint256 i; i < 8; i++) {
+                bytes4[16] memory line = text[i];
+
+                for (uint256 j; j < 16; j++) {
+                    bytes4 char = line[j];
+
+                    // return false if any single character is unsupported
+                    if (
+                        !ITypeface(capsulesTypeface).isSupportedBytes4(char) &&
+                        char != bytes4(0)
+                    ) {
+                        return false;
+                    }
+                }
+            }
+        }
+
+        return true;
+    }
+
     /// @notice EIP2981 royalty standard
     function royaltyInfo(uint256, uint256 salePrice)
         external
@@ -402,6 +436,11 @@ contract CapsuleToken is
     /* -------------------------------------------------------------------------- */
     /* ------------------------ CAPSULE OWNER FUNCTIONS ------------------------- */
     /* -------------------------------------------------------------------------- */
+    /*                      OOO   O   0  O   O  OOOOO  OOOO                       */
+    /*                     O   O  O   O  00  0  O      0   0                      */
+    /*                     O   O  O   O  0 O 0  OOOO   00O0                       */
+    /*                     O   O  O 0 O  0  00  O      0  0                       */
+    /*                      OOO    O O   O   O  O0000  O   O                      */
 
     /// @notice Allows the owner of the Capsule to update the Capsule text, fontWeight, and locked state.
     /// @param capsuleId ID of Capsule.
@@ -412,19 +451,22 @@ contract CapsuleToken is
         bytes4[16][8] calldata text,
         uint256 fontWeight,
         bool lock
-    )
-        public
-        onlyCapsuleOwner(capsuleId)
-        onlyUnlockedCapsule(capsuleId)
-        onlyValidText(text)
-        onlyValidFontWeight(fontWeight)
-    {
-        _textOf[capsuleId] = text;
-        _fontWeightOf[capsuleId] = fontWeight;
+    ) public {
+        _editCapsule(capsuleId, text, fontWeight, lock);
+    }
 
-        emit EditCapsule(capsuleId);
-
-        if (lock) _lockCapsule(capsuleId);
+    /// @notice Allows the owner of the Capsule to update the Capsule text, fontWeight, and locked state.
+    /// @param capsuleId ID of Capsule.
+    /// @param text New text for Capsule. 8 lines of 16 bytes3 characters in 2d array.
+    /// @param fontWeight New font weight for Capsule.
+    /// @param lock Locks capsule.
+    function editCapsuleWithValidText(
+        uint256 capsuleId,
+        bytes4[16][8] calldata text,
+        uint256 fontWeight,
+        bool lock
+    ) public onlyValidText(text) {
+        _editCapsule(capsuleId, text, fontWeight, lock);
     }
 
     /// @notice Allows Capsule owner to lock a Capsule, permanently preventing it from being edited.
@@ -451,6 +493,11 @@ contract CapsuleToken is
     /* -------------------------------------------------------------------------- */
     /* ---------------------------- ADMIN FUNCTIONS ----------------------------- */
     /* -------------------------------------------------------------------------- */
+    /*                      OOO   O000   O   O  OOOOO  O   0                      */
+    /*                     O   O  O   O  00 00    0    00  0                      */
+    /*                     O000O  O   O  0 O 0    O    0 O 0                      */
+    /*                     O   O  O   O  0   0    0    0  00                      */
+    /*                     0   0  0O0O   O   O  O0000  O   O                      */
 
     /// @notice Allows the contract owner to update the capsuleRenderer contract.
     /// @param _capsuleRenderer Address of new default CapsuleRenderer contract.
@@ -504,6 +551,11 @@ contract CapsuleToken is
     /* -------------------------------------------------------------------------- */
     /* --------------------------- INTERNAL FUNCTIONS --------------------------- */
     /* -------------------------------------------------------------------------- */
+    /*           O000O  0   0  OOOO0  OOOOO  OOOO   O   O   OOO   O               */
+    /*             0    00  0    0    O      O   0  00  0  O   0  O               */
+    /*             0    0 0 0    0    O000   OOOO   0 O 0  OOOOO  O               */
+    /*             0    0  00    0    O      O  0   0  00  O   0  O               */
+    /*           O0000  0   0    O    OOOOO  O   0  O   0  O   0  O0000           */
 
     /// @notice ERC721A override to start tokenId at 1 instead of 0.
     function _startTokenId() internal pure override returns (uint256) {
@@ -534,6 +586,49 @@ contract CapsuleToken is
         emit MintCapsule(capsuleId, to, color);
     }
 
+    function _mintWithText(
+        bytes3 color,
+        uint256 fontWeight,
+        bytes4[16][8] calldata text
+    )
+        internal
+        whenNotPaused
+        requireMintPrice
+        onlyMintableColor(color)
+        onlyImpureColor(color)
+        onlyValidFontWeight(fontWeight)
+        returns (uint256 capsuleId)
+    {
+        address to = msg.sender;
+
+        _mint(to, 1, new bytes(0), false);
+
+        capsuleId = _storeNewCapsuleData(color, fontWeight);
+
+        _textOf[capsuleId] = text;
+
+        emit MintCapsule(capsuleId, to, color);
+    }
+
+    function _editCapsule(
+        uint256 capsuleId,
+        bytes4[16][8] calldata text,
+        uint256 fontWeight,
+        bool lock
+    )
+        internal
+        onlyCapsuleOwner(capsuleId)
+        onlyUnlockedCapsule(capsuleId)
+        onlyValidFontWeight(fontWeight)
+    {
+        _textOf[capsuleId] = text;
+        _fontWeightOf[capsuleId] = fontWeight;
+
+        emit EditCapsule(capsuleId);
+
+        if (lock) _lockCapsule(capsuleId);
+    }
+
     function _lockCapsule(uint256 capsuleId)
         internal
         onlyCapsuleOwner(capsuleId)
@@ -542,36 +637,6 @@ contract CapsuleToken is
         _locked[capsuleId] = true;
 
         emit LockCapsule(capsuleId);
-    }
-
-    /// @notice Check if text is valid.
-    /// @dev Only allows bytes allowed by CapsulesTypeface, and 0x00. Non-trailing 0x00 bytes are treated as spaces, trailing 0x00 bytes are ignored.
-    /// @param text Text to check validity of. 8 lines of 16 bytes3 characters in 2d array.
-    /// @return true True if text is valid.
-    function _isValidText(bytes4[16][8] memory text)
-        internal
-        view
-        returns (bool)
-    {
-        unchecked {
-            for (uint256 i; i < 8; i++) {
-                bytes4[16] memory line = text[i];
-
-                for (uint256 j; j < 16; j++) {
-                    bytes4 char = line[j];
-
-                    // return false if any single character is unsupported
-                    if (
-                        !ITypeface(capsulesTypeface).isSupportedBytes4(char) &&
-                        char != bytes4(0)
-                    ) {
-                        return false;
-                    }
-                }
-            }
-        }
-
-        return true;
     }
 
     /// @notice Check if font weight is valid.

@@ -50,7 +50,7 @@ contract CapsuleRenderer is ICapsuleRenderer {
         return svgOf(capsule, true);
     }
 
-    /// @notice Return Base64-encoded SVG for Capsule
+    /// @notice Return Base64-encoded SVG for Capsule. Can optionally return a square ratio image, regardless of text content shape.
     /// @param capsule Capsule to return SVG for
     /// @param square Fit image to square with content centered
     /// @return base64Svg Base64-encoded SVG for Capsule
@@ -305,13 +305,13 @@ contract CapsuleRenderer is ICapsuleRenderer {
         defaultText[1][6] = bytes4(_color[5]);
     }
 
-    /// @notice Calculate specs used to build SVG for capsule
+    /// @notice Calculate specs used to build SVG for capsule. The SvgSpecs struct allows using memory more efficiently when constructing a SVG for a Capsule.
     /// @param capsule Capsule to calculate specs for
     /// @return specs SVG specs calculated for Capsule
     function _svgSpecsOf(Capsule memory capsule)
         internal
         pure
-        returns (SvgSpecs memory specs)
+        returns (SvgSpecs memory)
     {
         // Calculate number of lines of Capsule text to render. Only trailing empty lines are excluded.
         uint256 linesCount;
@@ -346,15 +346,19 @@ contract CapsuleRenderer is ICapsuleRenderer {
         // Height of the text area (in dots)
         uint256 textAreaHeightDots = linesCount * 12 + 2;
 
-        specs = SvgSpecs({
-            hexColor: _bytes3ToHexChars(capsule.color),
-            edgeRowId: edgeRowId,
-            textRowId: abi.encodePacked("textRow", Strings.toString(charWidth)),
-            linesCount: linesCount,
-            charWidth: charWidth,
-            textAreaWidthDots: textAreaWidthDots,
-            textAreaHeightDots: textAreaHeightDots
-        });
+        return
+            SvgSpecs({
+                hexColor: _bytes3ToHexChars(capsule.color),
+                edgeRowId: edgeRowId,
+                textRowId: abi.encodePacked(
+                    "textRow",
+                    Strings.toString(charWidth)
+                ),
+                linesCount: linesCount,
+                charWidth: charWidth,
+                textAreaWidthDots: textAreaWidthDots,
+                textAreaHeightDots: textAreaHeightDots
+            });
     }
 
     /// @notice Check if all lines of text are empty
@@ -386,7 +390,7 @@ contract CapsuleRenderer is ICapsuleRenderer {
     }
 
     /// @notice Returns html-safe version of a line of text
-    /// @dev Iterates through each byte in line of text and replaces each byte as needed to create a string that will render in html without issue. Ensures that no illegal characters or 0x00 bytes remain.
+    /// @dev Iterates through each byte in line of text and replaces each byte as needed to create a string that will render in html without issue. Ensures that no illegal characters or 0x00 bytes remain. Non-trailing 0x00 bytes are converted to spaces, trailing 0x00 bytes are trimmed.
     /// @param line Line of text to render safe.
     /// @return safeLine Text string that can be safely rendered in html.
     function _htmlSafeLine(bytes4[16] memory line)
@@ -394,14 +398,14 @@ contract CapsuleRenderer is ICapsuleRenderer {
         pure
         returns (string memory safeLine)
     {
-        // Build bytes in reverse to allow trimming trailing whitespace
+        // Build bytes in reverse to more easily trim trailing whitespace
         for (uint256 i = 16; i > 0; i--) {
             bytes4 char = line[i - 1];
 
             // 0x0 bytes should not be rendered.
             if (char == bytes4(0)) continue;
 
-            // Some bytes may not render properly in SVG text, so we replace them with their matching "html name code".
+            // Some bytes cannot render in SVG text, so we replace them with their "&"-prefixed html name code.
             if (char == 0x0000003c) {
                 // Replace `<`
                 safeLine = string.concat("&lt;", safeLine);
@@ -412,7 +416,7 @@ contract CapsuleRenderer is ICapsuleRenderer {
                 // Replace `&`
                 safeLine = string.concat("&amp;", safeLine);
             } else {
-                // Add bytes4 character while removing individual 0x0 bytes, which cannot be rendered.
+                // If bytes4 character is html-safe, we add it while removing individual 0x0 bytes, which cannot be rendered.
                 for (uint256 j = 4; j > 0; j--) {
                     if (char[j - 1] != bytes1(0)) {
                         safeLine = string(

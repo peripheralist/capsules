@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
 
-/**
-  @title ITypeface
-  @author peri
-  @notice Interface for the Typeface contract.
- */
+/// @title ITypeface
+
+/// @author peri
+
+/// @notice Interface for Typeface contract
+
+pragma solidity ^0.8.0;
 
 struct Font {
     uint256 weight;

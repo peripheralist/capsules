@@ -1,6 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0
 
-/// @title Interface for Capsules Token
+/// @title ICapsuleToken
+
+/// @author peri
+
+/// @notice Interface for CapsuleToken contract
 
 pragma solidity ^0.8.13;
 
@@ -76,15 +80,26 @@ interface ICapsuleToken {
         bytes4[16][8] calldata text
     ) external payable returns (uint256);
 
+    function mintWithValidText(
+        bytes3 color,
+        uint256 fontWeight,
+        bytes4[16][8] calldata text
+    ) external payable returns (uint256);
+
     function mintPureColorForFontWeight(address to, uint256 fontWeight)
         external
         returns (uint256 capsuleId);
 
     function lockCapsule(uint256 capsuleId) external;
 
-    function withdraw() external;
-
     function editCapsule(
+        uint256 capsuleId,
+        bytes4[16][8] calldata text,
+        uint256 fontWeight,
+        bool lock
+    ) external;
+
+    function editCapsuleWithValidText(
         uint256 capsuleId,
         bytes4[16][8] calldata text,
         uint256 fontWeight,
@@ -96,6 +111,13 @@ interface ICapsuleToken {
     function burn(uint256 capsuleId) external;
 
     function setDefaultCapsuleRenderer(address _capsuleRenderer) external;
+
+    function isValidText(bytes4[16][8] memory text)
+        external
+        view
+        returns (bool);
+
+    function withdraw() external;
 
     function setFeeReceiver(address _feeReceiver) external;
 

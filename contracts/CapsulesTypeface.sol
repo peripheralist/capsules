@@ -21,18 +21,106 @@ contract CapsulesTypeface is Typeface {
         capsuleToken = ICapsuleToken(_capsuleToken);
     }
 
-    function isSupportedByte(bytes1) external pure returns (bool) {
-        // TODO
-        return true;
-        // All basic Latin letters, digits, symbols, punctuation
-        // return b >= 0x00000020 && b <= 0x0000007E;
+    function isSupportedByte(bytes1 char) external pure returns (bool) {
+        return ((char >= 0x20 && char <= 0x7e) ||
+            (char >= 0xa0 && char <= 0xa8) ||
+            (char >= 0xab && char <= 0xac) ||
+            (char >= 0xaf && char <= 0xb1) ||
+            char == 0xb4 ||
+            (char >= 0xb6 && char <= 0xb7) ||
+            (char >= 0xba && char <= 0xbb) ||
+            (char >= 0xbf && char <= 0xc4) ||
+            (char >= 0xc6 && char <= 0xcf) ||
+            (char >= 0xd1 && char <= 0xd7) ||
+            (char >= 0xd9 && char <= 0xdc) ||
+            (char >= 0xe0 && char <= 0xe4) ||
+            (char >= 0xe6 && char <= 0xef) ||
+            (char >= 0xf1 && char <= 0xfc) ||
+            char == 0xff);
     }
 
-    function isSupportedBytes4(bytes4) external pure returns (bool) {
-        // TODO
-        return true;
-        // All basic Latin letters, digits, symbols, punctuation
-        // return b >= 0x00000020 && b <= 0x0000007E;
+    function isSupportedBytes4(bytes4 char) external pure returns (bool) {
+        return ((char >= 0x00000020 && char <= 0x0000007e) ||
+            (char >= 0x000000a0 && char <= 0x000000a8) ||
+            (char >= 0x000000ab && char <= 0x000000ac) ||
+            (char >= 0x000000af && char <= 0x000000b1) ||
+            char == 0x000000b4 ||
+            (char >= 0x000000b6 && char <= 0x000000b7) ||
+            (char >= 0x000000ba && char <= 0x000000bb) ||
+            (char >= 0x000000bf && char <= 0x000000c4) ||
+            (char >= 0x000000c6 && char <= 0x000000cf) ||
+            (char >= 0x000000d1 && char <= 0x000000d7) ||
+            (char >= 0x000000d9 && char <= 0x000000dc) ||
+            (char >= 0x000000e0 && char <= 0x000000e4) ||
+            (char >= 0x000000e6 && char <= 0x000000ef) ||
+            (char >= 0x000000f1 && char <= 0x000000fc) ||
+            (char >= 0x000000ff && char <= 0x00000101) ||
+            (char >= 0x00000112 && char <= 0x00000113) ||
+            (char >= 0x00000128 && char <= 0x0000012b) ||
+            char == 0x00000131 ||
+            (char >= 0x0000014c && char <= 0x0000014d) ||
+            (char >= 0x00000168 && char <= 0x0000016b) ||
+            char == 0x00000178 ||
+            char == 0x00000192 ||
+            (char >= 0x000002c2 && char <= 0x000002c3) ||
+            char == 0x000002c6 ||
+            char == 0x000002dc ||
+            char == 0x0000039e ||
+            char == 0x000003c0 ||
+            char == 0x00000e3f ||
+            (char >= 0x00002013 && char <= 0x00002015) ||
+            (char >= 0x00002017 && char <= 0x0000201a) ||
+            (char >= 0x0000201c && char <= 0x0000201e) ||
+            (char >= 0x00002020 && char <= 0x00002022) ||
+            char == 0x00002026 ||
+            char == 0x00002030 ||
+            (char >= 0x00002032 && char <= 0x00002033) ||
+            (char >= 0x00002039 && char <= 0x0000203a) ||
+            char == 0x0000203c ||
+            char == 0x0000203e ||
+            char == 0x00002044 ||
+            char == 0x000020a8 ||
+            char == 0x000020ac ||
+            char == 0x000020b4 ||
+            char == 0x000020bd ||
+            char == 0x000020bf ||
+            (char >= 0x00002190 && char <= 0x00002199) ||
+            (char >= 0x000021ba && char <= 0x000021bb) ||
+            char == 0x00002206 ||
+            char == 0x0000220f ||
+            (char >= 0x00002211 && char <= 0x00002212) ||
+            char == 0x0000221a ||
+            char == 0x0000221e ||
+            char == 0x0000222b ||
+            char == 0x00002248 ||
+            char == 0x00002260 ||
+            (char >= 0x00002264 && char <= 0x00002265) ||
+            (char >= 0x00002302 && char <= 0x00002304) ||
+            char == 0x0000231b ||
+            char == 0x000023cf ||
+            (char >= 0x000023e9 && char <= 0x000023ea) ||
+            (char >= 0x000023ed && char <= 0x000023ef) ||
+            (char >= 0x000023f8 && char <= 0x000023fa) ||
+            char == 0x000025b2 ||
+            char == 0x000025b6 ||
+            char == 0x000025bc ||
+            char == 0x000025c0 ||
+            char == 0x000025ca ||
+            char == 0x00002600 ||
+            char == 0x00002610 ||
+            char == 0x00002612 ||
+            char == 0x00002630 ||
+            (char >= 0x00002639 && char <= 0x0000263a) ||
+            char == 0x0000263c ||
+            char == 0x00002665 ||
+            (char >= 0x00002680 && char <= 0x00002685) ||
+            (char >= 0x00002690 && char <= 0x00002691) ||
+            char == 0x000026a1 ||
+            char == 0x00002713 ||
+            (char >= 0x00002b05 && char <= 0x00002b0d) ||
+            char == 0x00002b95 ||
+            (char >= 0x0000e000 && char <= 0x0000e02b) ||
+            char == 0x0000e069);
     }
 
     /// @notice Mint pure color Capsule token to caller when caller sets fontSrc

@@ -42,7 +42,7 @@ export const stringToBytes4Line = (str?: string) => {
   const arr: string[] = [];
   for (let i = 0; i < 16; i++) {
     let byte = "00000000";
-    if (str?.length) {
+    if (str && str.length > i) {
       byte = Buffer.from(str[i], "utf8").toString("hex").padStart(8, "0");
     }
     arr.push("0x" + byte);
