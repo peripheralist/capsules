@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0
 
-/// @title Capsules Renderer
+/**
+  @title Capsules Renderer
 
-/// @author peri
+  @author peri
 
-/// @notice Renders SVG images for Capsules tokens.
+  @notice Renders SVG images for Capsules tokens.
+ */
 
 pragma solidity 0.8.14;
 
@@ -272,9 +274,9 @@ contract CapsuleRenderer is ICapsuleRenderer {
     /// @dev Returns true if every byte of text is 0x00
     /// @param line line to check if empty
     /// @return true if line is empty
-    function _isEmptyLine(bytes4[16] memory line) internal pure returns (bool) {
+    function _isEmptyLine(bytes2[16] memory line) internal pure returns (bool) {
         for (uint256 i; i < 16; i++) {
-            if (line[i] != bytes4(0)) return false;
+            if (line[i] != bytes2(0)) return false;
         }
         return true;
     }
@@ -285,24 +287,24 @@ contract CapsuleRenderer is ICapsuleRenderer {
     function _defaultTextOf(bytes3 color)
         internal
         pure
-        returns (bytes4[16][8] memory defaultText)
+        returns (bytes2[16][8] memory defaultText)
     {
-        defaultText[0][0] = bytes4("C");
-        defaultText[0][1] = bytes4("A");
-        defaultText[0][2] = bytes4("P");
-        defaultText[0][3] = bytes4("S");
-        defaultText[0][4] = bytes4("U");
-        defaultText[0][5] = bytes4("L");
-        defaultText[0][6] = bytes4("E");
+        defaultText[0][0] = bytes2("C");
+        defaultText[0][1] = bytes2("A");
+        defaultText[0][2] = bytes2("P");
+        defaultText[0][3] = bytes2("S");
+        defaultText[0][4] = bytes2("U");
+        defaultText[0][5] = bytes2("L");
+        defaultText[0][6] = bytes2("E");
 
         bytes memory _color = _bytes3ToHexChars(color);
-        defaultText[1][0] = bytes4("#");
-        defaultText[1][1] = bytes4(_color[0]);
-        defaultText[1][2] = bytes4(_color[1]);
-        defaultText[1][3] = bytes4(_color[2]);
-        defaultText[1][4] = bytes4(_color[3]);
-        defaultText[1][5] = bytes4(_color[4]);
-        defaultText[1][6] = bytes4(_color[5]);
+        defaultText[1][0] = bytes2("#");
+        defaultText[1][1] = bytes2(_color[0]);
+        defaultText[1][2] = bytes2(_color[1]);
+        defaultText[1][3] = bytes2(_color[2]);
+        defaultText[1][4] = bytes2(_color[3]);
+        defaultText[1][5] = bytes2(_color[4]);
+        defaultText[1][6] = bytes2(_color[5]);
     }
 
     /// @notice Calculate specs used to build SVG for capsule. The SvgSpecs struct allows using memory more efficiently when constructing a SVG for a Capsule.
@@ -327,7 +329,7 @@ contract CapsuleRenderer is ICapsuleRenderer {
         for (uint256 i; i < linesCount; i++) {
             // Reverse iterate over line
             for (uint256 j = 16; j > 0; j--) {
-                if (capsule.text[i][j - 1] != bytes4(0) && j > charWidth) {
+                if (capsule.text[i][j - 1] != bytes2(0) && j > charWidth) {
                     charWidth = j;
                 }
             }
@@ -365,7 +367,7 @@ contract CapsuleRenderer is ICapsuleRenderer {
     /// @dev Returns true if every line of text is empty
     /// @param text Text to check if empty
     /// @return true if text is empty
-    function _isEmptyText(bytes4[16][8] memory text)
+    function _isEmptyText(bytes2[16][8] memory text)
         internal
         pure
         returns (bool)
@@ -379,7 +381,7 @@ contract CapsuleRenderer is ICapsuleRenderer {
     /// @notice Returns html-safe version of text.
     /// @param text Text to render safe.
     /// @return safeText Text string array that can be safely rendered in html.
-    function htmlSafeText(bytes4[16][8] memory text)
+    function htmlSafeText(bytes2[16][8] memory text)
         external
         pure
         returns (string[8] memory safeText)
@@ -393,30 +395,30 @@ contract CapsuleRenderer is ICapsuleRenderer {
     /// @dev Iterates through each byte in line of text and replaces each byte as needed to create a string that will render in html without issue. Ensures that no illegal characters or 0x00 bytes remain. Non-trailing 0x00 bytes are converted to spaces, trailing 0x00 bytes are trimmed.
     /// @param line Line of text to render safe.
     /// @return safeLine Text string that can be safely rendered in html.
-    function _htmlSafeLine(bytes4[16] memory line)
+    function _htmlSafeLine(bytes2[16] memory line)
         internal
         pure
         returns (string memory safeLine)
     {
         // Build bytes in reverse to more easily trim trailing whitespace
         for (uint256 i = 16; i > 0; i--) {
-            bytes4 char = line[i - 1];
+            bytes2 char = line[i - 1];
 
             // 0x0 bytes should not be rendered.
-            if (char == bytes4(0)) continue;
+            if (char == bytes2(0)) continue;
 
             // Some bytes cannot render in SVG text, so we replace them with their "&"-prefixed html name code.
-            if (char == 0x0000003c) {
+            if (char == 0x003c) {
                 // Replace `<`
                 safeLine = string.concat("&lt;", safeLine);
-            } else if (char == 0x0000003E) {
+            } else if (char == 0x003E) {
                 // Replace `>`
                 safeLine = string.concat("&gt;", safeLine);
-            } else if (char == 0x00000026) {
+            } else if (char == 0x0026) {
                 // Replace `&`
                 safeLine = string.concat("&amp;", safeLine);
             } else {
-                // If bytes4 character is html-safe, we add it while removing individual 0x0 bytes, which cannot be rendered.
+                // If bytes2 character is html-safe, we add it while removing individual 0x0 bytes, which cannot be rendered.
                 for (uint256 j = 4; j > 0; j--) {
                     if (char[j - 1] != bytes1(0)) {
                         safeLine = string(

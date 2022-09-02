@@ -16,7 +16,7 @@ import {
   deployCapsulesTypeface,
   emptyNote,
   mintPrice,
-  textToBytes4Lines,
+  textToBytes2Lines,
   wallets,
   deployCapsuleMetadata,
 } from "../scripts/utils";
@@ -211,7 +211,7 @@ describe("Capsules", async () => {
         signingContract(capsuleToken, minter1).mintWithValidText(
           "0x000aff",
           400,
-          textToBytes4Lines(["💩"]),
+          textToBytes2Lines(["®"]),
           {
             value: mintPrice,
           }
@@ -225,7 +225,7 @@ describe("Capsules", async () => {
       await signingContract(capsuleToken, minter1).mintWithText(
         "0x000aff",
         400,
-        textToBytes4Lines(["💩"]),
+        textToBytes2Lines(["®"]),
         {
           value: mintPrice,
         }
@@ -279,7 +279,7 @@ describe("Capsules", async () => {
 
       const color = "0x00aaff";
 
-      const text = textToBytes4Lines(["asdf"]);
+      const text = textToBytes2Lines(["asdf"]);
 
       return expect(
         minter1CapsuleToken.mintWithText(color, fontWeight, text, {
@@ -299,7 +299,7 @@ describe("Capsules", async () => {
 
       const color = "0x00a0ff";
 
-      const text = textToBytes4Lines(["asdf"]);
+      const text = textToBytes2Lines(["asdf"]);
 
       return expect(
         minter1CapsuleToken.mintWithValidText(color, fontWeight, text, {
@@ -398,7 +398,7 @@ describe("Capsules", async () => {
       await expect(
         signingContract(capsuleToken, minter1).editCapsuleWithValidText(
           id,
-          textToBytes4Lines(["👽"]),
+          textToBytes2Lines(["®"]),
           400,
           false
         )
@@ -412,7 +412,7 @@ describe("Capsules", async () => {
 
       await signingContract(capsuleToken, minter1).editCapsule(
         id,
-        textToBytes4Lines(["👽"]),
+        textToBytes2Lines(["®"]),
         400,
         false
       );

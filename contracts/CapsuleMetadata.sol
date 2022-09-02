@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0
 
-/// @title Capsules Metadata
+/**
+  @title Capsules Metadata
 
-/// @author peri
+  @author peri
 
-/// @notice Renders metadata for Capsules tokens.
+  @notice Renders metadata for Capsules tokens.
+ */
 
 pragma solidity 0.8.14;
 
@@ -16,8 +18,12 @@ import "./interfaces/ICapsuleToken.sol";
 import "./utils/Base64.sol";
 
 contract CapsuleMetadata is ICapsuleMetadata {
-    function tokenUri(Capsule memory capsule, string memory image)
-        public
+    /// @notice Returns base64-encoded json containing Capsule metadata.
+    /// @dev `image` is passed as an argument to allow Capsule image rendering to be handled by an external contract.
+    /// @param capsule Capsule to return metadata for.
+    /// @param image Image to be included in metadata.
+    function metadataOf(Capsule memory capsule, string memory image)
+        external
         pure
         returns (string memory)
     {
@@ -34,7 +40,7 @@ contract CapsuleMetadata is ICapsuleMetadata {
                         abi.encodePacked(
                             '{"name": "Capsule ',
                             Strings.toString(capsule.id),
-                            '", "description": "7,957 NFTs with unique colors and editable text rendered as SVGs on-chain. 7 pure colors are reserved for wallets that pay gas to store one of the 7 Capsules font weights in the CapsulesTypeface contract.", "image": "',
+                            '", "description": "7,957 NFTs with unique colors and editable text rendered as SVGs on-chain. 7 pure colors are reserved for wallets that pay gas to store one of the 7 Capsules typeface fonts in the CapsulesTypeface contract.", "image": "',
                             image,
                             '", "attributes": [{"trait_type": "Color", "value": "#',
                             _bytes3ToHexChars(capsule.color),

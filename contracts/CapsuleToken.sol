@@ -1,12 +1,14 @@
 // SPDX-License-Identifier: GPL-3.0
 
-/// @title Capsules Token
+/**
+  @title Capsules Token
 
-/// @author peri
+  @author peri
 
-/// @notice Each Capsule token has a unique color and a custom text rendered as a SVG. The text and fontWeight for a Capsule can be updated at any time by its owner.
+  @notice Each Capsule token has a unique color and a custom text rendered as a SVG. The text and fontWeight for a Capsule can be updated at any time by its owner.
 
-/// @dev `bytes3` type is used to store the rgb hex-encoded color that is unique to each capsule. `bytes4[16][8]` type is used to store text for Capsules: 8 lines of 16 bytes4 characters each. Because the Capsules typeface is not limited to ascii characters (1 byte), we use bytes4 to support characters that require more than 1 byte to encode.
+  @dev `bytes3` type is used to store the rgb hex-encoded color that is unique to each capsule. `bytes2[16][8]` type is used to store text for Capsules: 8 lines of 16 bytes2 characters each. Because the Capsules typeface is not limited to ascii characters (1 byte), we use bytes2 to support characters that require more than 1 byte to encode.
+ */
 
 pragma solidity 0.8.14;
 
@@ -55,7 +57,7 @@ contract CapsuleToken is
     }
 
     /// @notice Require that the text is valid
-    modifier onlyValidText(bytes4[16][8] memory text) {
+    modifier onlyValidText(bytes2[16][8] memory text) {
         if (!isValidText(text)) revert InvalidText();
         _;
     }
@@ -161,7 +163,7 @@ contract CapsuleToken is
     uint256 public royalty;
 
     /// Mapping of Capsule ID to text
-    mapping(uint256 => bytes4[16][8]) internal _textOf;
+    mapping(uint256 => bytes2[16][8]) internal _textOf;
 
     /// Mapping of Capsule ID to color
     mapping(uint256 => bytes3) internal _colorOf;
@@ -209,7 +211,7 @@ contract CapsuleToken is
     function mintWithText(
         bytes3 color,
         uint256 fontWeight,
-        bytes4[16][8] calldata text
+        bytes2[16][8] calldata text
     ) external payable nonReentrant returns (uint256 capsuleId) {
         return _mintWithText(color, fontWeight, text);
     }
@@ -223,7 +225,7 @@ contract CapsuleToken is
     function mintWithValidText(
         bytes3 color,
         uint256 fontWeight,
-        bytes4[16][8] calldata text
+        bytes2[16][8] calldata text
     ) external payable onlyValidText(text) nonReentrant returns (uint256) {
         return _mintWithText(color, fontWeight, text);
     }
@@ -241,7 +243,7 @@ contract CapsuleToken is
         return _mintCapsule(to, pureColorForFontWeight(fontWeight), fontWeight);
     }
 
-    /// @notice Return token URI for Capsule.
+    /// @notice Return token URI for Capsule, using the capsuleMetadata contract.
     /// @param capsuleId ID of Capsule token.
     /// @return metadata Metadata string for Capsule.
     function tokenURI(uint256 capsuleId)
@@ -253,13 +255,13 @@ contract CapsuleToken is
         require(_exists(capsuleId), "ERC721A: URI query for nonexistent token");
 
         return
-            ICapsuleMetadata(capsuleMetadata).tokenUri(
+            ICapsuleMetadata(capsuleMetadata).metadataOf(
                 capsuleOf(capsuleId),
                 svgOf(capsuleId)
             );
     }
 
-    /// @notice Return SVG image of Capsule, using that Capsule's renderer.
+    /// @notice Return SVG image of Capsule, using that Capsule's renderer contract.
     /// @param capsuleId ID of Capsule token.
     /// @return svg SVG image of Capsule.
     function svgOf(uint256 capsuleId) public view returns (string memory) {
@@ -315,8 +317,8 @@ contract CapsuleToken is
         return pureColors[(fontWeight / 100) - 1];
     }
 
-    /// @notice Returns formatted version of Capsule text that is safe to render in HTML.
-    /// @param capsuleId ID of Capsule
+    /// @notice Returns formatted version of Capsule text that is safe to render in HTML, using the renderer for that Capsule.
+    /// @param capsuleId ID of Capsule.
     /// @return safeText Formatted Capsule text.
     function htmlSafeTextOf(uint256 capsuleId)
         external
@@ -324,7 +326,7 @@ contract CapsuleToken is
         returns (string[8] memory)
     {
         return
-            ICapsuleRenderer(defaultCapsuleRenderer).htmlSafeText(
+            ICapsuleRenderer(rendererOf(capsuleId)).htmlSafeText(
                 _textOf[capsuleId]
             );
     }
@@ -338,11 +340,11 @@ contract CapsuleToken is
 
     /// @notice Returns text of Capsule token with ID.
     /// @param capsuleId ID of Capsule.
-    /// @return text Text of Capsule as nested bytes4 array.
+    /// @return text Text of Capsule as nested bytes2 array.
     function textOf(uint256 capsuleId)
         external
         view
-        returns (bytes4[16][8] memory)
+        returns (bytes2[16][8] memory)
     {
         return _textOf[capsuleId];
     }
@@ -383,18 +385,18 @@ contract CapsuleToken is
     /// @dev Text is valid if every bytes is supported by CapsulesTypeface, or is 0x00.
     /// @param text Text to check validity of. 8 lines of 16 bytes3 characters in 2d array.
     /// @return true True if text is valid.
-    function isValidText(bytes4[16][8] memory text) public view returns (bool) {
+    function isValidText(bytes2[16][8] memory text) public view returns (bool) {
         unchecked {
             for (uint256 i; i < 8; i++) {
-                bytes4[16] memory line = text[i];
+                bytes2[16] memory line = text[i];
 
                 for (uint256 j; j < 16; j++) {
-                    bytes4 char = line[j];
+                    bytes2 char = line[j];
 
                     // return false if any single character is unsupported
                     if (
-                        !ITypeface(capsulesTypeface).isSupportedBytes4(char) &&
-                        char != bytes4(0)
+                        !ITypeface(capsulesTypeface).isSupportedBytes2(char) &&
+                        char != bytes2(0)
                     ) {
                         return false;
                     }
@@ -448,7 +450,7 @@ contract CapsuleToken is
     /// @param fontWeight New font weight for Capsule.
     function editCapsule(
         uint256 capsuleId,
-        bytes4[16][8] calldata text,
+        bytes2[16][8] calldata text,
         uint256 fontWeight,
         bool lock
     ) public {
@@ -462,7 +464,7 @@ contract CapsuleToken is
     /// @param lock Locks capsule.
     function editCapsuleWithValidText(
         uint256 capsuleId,
-        bytes4[16][8] calldata text,
+        bytes2[16][8] calldata text,
         uint256 fontWeight,
         bool lock
     ) public onlyValidText(text) {
@@ -475,6 +477,9 @@ contract CapsuleToken is
         _lockCapsule(capsuleId);
     }
 
+    /// @notice Allows the owner of a Capsule to set its renderer contract. If renderer is the zero address, the Capsule will use the default renderer.
+    /// @param capsuleId ID of Capsule to set renderer for.
+    /// @param renderer Address of new renderer.
     function setRendererOf(uint256 capsuleId, address renderer)
         external
         onlyCapsuleOwner(capsuleId)
@@ -499,18 +504,15 @@ contract CapsuleToken is
     /*                     O   O  O   O  0   0    0    0  00                      */
     /*                     0   0  0O0O   O   O  O0000  O   O                      */
 
-    /// @notice Allows the contract owner to update the capsuleRenderer contract.
-    /// @param _capsuleRenderer Address of new default CapsuleRenderer contract.
-    function setDefaultCapsuleRenderer(address _capsuleRenderer)
-        external
-        onlyOwner
-    {
-        defaultCapsuleRenderer = _capsuleRenderer;
+    /// @notice Allows the owner of this contract to update the defaultCapsuleRenderer contract.
+    /// @param renderer Address of new default defaultCapsuleRenderer contract.
+    function setDefaultCapsuleRenderer(address renderer) external onlyOwner {
+        defaultCapsuleRenderer = renderer;
 
-        emit SetDefaultCapsuleRenderer(_capsuleRenderer);
+        emit SetDefaultCapsuleRenderer(renderer);
     }
 
-    /// @notice Allows the contract owner to update the capsuleMetadata contract.
+    /// @notice Allows the owner of this contract to update the CapsuleMetadata contract.
     /// @param _capsuleMetadata Address of new default CapsuleMetadata contract.
     function setCapsuleMetadata(address _capsuleMetadata) external onlyOwner {
         capsuleMetadata = _capsuleMetadata;
@@ -518,7 +520,7 @@ contract CapsuleToken is
         emit SetCapsuleMetadata(_capsuleMetadata);
     }
 
-    /// @notice Allows the owner to update feeReceiver.
+    /// @notice Allows the owner of this contract to update feeReceiver.
     /// @param _feeReceiver Address of new feeReceiver.
     function setFeeReceiver(address _feeReceiver) external onlyOwner {
         feeReceiver = _feeReceiver;
@@ -526,7 +528,7 @@ contract CapsuleToken is
         emit SetFeeReceiver(_feeReceiver);
     }
 
-    /// @notice Allows the owner to update the royalty amount.
+    /// @notice Allows the owner of this contract to update the royalty amount.
     /// @param _royalty New royalty amount.
     function setRoyalty(uint256 _royalty) external onlyOwner {
         require(_royalty <= 1000, "Amount too high");
@@ -589,7 +591,7 @@ contract CapsuleToken is
     function _mintWithText(
         bytes3 color,
         uint256 fontWeight,
-        bytes4[16][8] calldata text
+        bytes2[16][8] calldata text
     )
         internal
         whenNotPaused
@@ -612,7 +614,7 @@ contract CapsuleToken is
 
     function _editCapsule(
         uint256 capsuleId,
-        bytes4[16][8] calldata text,
+        bytes2[16][8] calldata text,
         uint256 fontWeight,
         bool lock
     )

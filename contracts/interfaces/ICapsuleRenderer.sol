@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0
 
-/// @title ICapsuleRenderer
+/**
+  @title ICapsuleRenderer
 
-/// @author peri
+  @author peri
 
-/// @notice Interface for CapsuleRenderer contract
+  @notice Interface for CapsuleRenderer contract
+ */
 
 pragma solidity ^0.8.13;
 
@@ -16,7 +18,7 @@ interface ICapsuleRenderer {
         view
         returns (string memory);
 
-    function htmlSafeText(bytes4[16][8] memory line)
+    function htmlSafeText(bytes2[16][8] memory line)
         external
         pure
         returns (string[8] memory safeText);

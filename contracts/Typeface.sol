@@ -5,10 +5,12 @@ import "./interfaces/ITypeface.sol";
 
 /**
   @title Typeface
-  @author peri
-  @notice The Typeface contract allows storing and retrieving font source data. Font sources can be large and cost large amounts of gas to store. To avoid surpassing gas limits in deploying a contract with font source data, only a hash of the data is stored when the contract is deployed. This allows font data to be stored later in separate transactions, provided the data matches the corresponding hash. Fonts are identified by the Font struct, which includes "style" and "weight" properties.
 
-  Two functions allow specifying which characters are supported by a typeface. ASCII characters can be encoded in a single byte, so typefaces using only this charset can override `isSupportedByte(bytes1)` to determine if a character is supported. For more complex characters requiring more than 1 byte to encode, `isSupportedBytes4(bytes4)` should be used.
+  @author peri
+
+  @notice The Typeface contract allows storing and retrieving font source data. Font sources can be large and cost large amounts of gas to store. To save gas or avoid surpassing gas limits while deploying a contract containing font source data, only a hash of the data is stored when the contract is deployed. This allows font data to be stored in later transactions, provided the data matches the corresponding hash. Fonts are identified by the Font struct, which includes "style" and "weight" properties.
+
+  Four functions allow specifying which characters are supported by a typeface. ASCII characters can be encoded in a single byte, so typefaces using only this charset can override `isSupportedByte(bytes1)` to determine if a character is supported. For more complex characters requiring more than 1 byte to encode, `isSupportedBytes2(bytes2)`, `isSupportedBytes3(bytes3)`, or `isSupportedBytes4(bytes4)` should be used.
  */
 
 abstract contract Typeface is ITypeface {

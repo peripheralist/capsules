@@ -1,10 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0
 
-/// @title ICapsuleToken
+/**
+  @title ICapsuleToken
 
-/// @author peri
+  @author peri
 
-/// @notice Interface for CapsuleToken contract
+  @notice Interface for CapsuleToken contract
+ */
 
 pragma solidity ^0.8.13;
 
@@ -15,7 +17,7 @@ struct Capsule {
     uint256 id;
     bytes3 color;
     uint256 fontWeight;
-    bytes4[16][8] text;
+    bytes2[16][8] text;
     bool isPure;
     bool isLocked;
 }
@@ -58,7 +60,7 @@ interface ICapsuleToken {
     function textOf(uint256 capsuleId)
         external
         view
-        returns (bytes4[16][8] memory text);
+        returns (bytes2[16][8] memory text);
 
     function fontWeightOf(uint256 capsuleId)
         external
@@ -77,13 +79,13 @@ interface ICapsuleToken {
     function mintWithText(
         bytes3 color,
         uint256 fontWeight,
-        bytes4[16][8] calldata text
+        bytes2[16][8] calldata text
     ) external payable returns (uint256);
 
     function mintWithValidText(
         bytes3 color,
         uint256 fontWeight,
-        bytes4[16][8] calldata text
+        bytes2[16][8] calldata text
     ) external payable returns (uint256);
 
     function mintPureColorForFontWeight(address to, uint256 fontWeight)
@@ -94,14 +96,14 @@ interface ICapsuleToken {
 
     function editCapsule(
         uint256 capsuleId,
-        bytes4[16][8] calldata text,
+        bytes2[16][8] calldata text,
         uint256 fontWeight,
         bool lock
     ) external;
 
     function editCapsuleWithValidText(
         uint256 capsuleId,
-        bytes4[16][8] calldata text,
+        bytes2[16][8] calldata text,
         uint256 fontWeight,
         bool lock
     ) external;
@@ -112,7 +114,7 @@ interface ICapsuleToken {
 
     function setDefaultCapsuleRenderer(address _capsuleRenderer) external;
 
-    function isValidText(bytes4[16][8] memory text)
+    function isValidText(bytes2[16][8] memory text)
         external
         view
         returns (bool);
