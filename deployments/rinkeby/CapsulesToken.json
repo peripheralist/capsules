@@ -1179,9 +1179,9 @@
   {
     "inputs": [
       {
-        "internalType": "bytes2",
+        "internalType": "bytes4",
         "name": "interfaceId",
-        "type": "bytes2"
+        "type": "bytes4"
       }
     ],
     "name": "supportsInterface",

@@ -19,7 +19,7 @@ struct Capsule {
     uint256 id;
     bytes3 color;
     Font font;
-    bytes2[16][8] text;
+    bytes4[16][8] text;
     bool isPure;
     bool isLocked;
 }
@@ -44,29 +44,29 @@ interface ICapsuleToken {
     function capsuleOf(uint256 capsuleId)
         external
         view
-        returns (Capsule memory capsule);
+        returns (Capsule memory);
 
     function isPureColor(bytes3 color) external view returns (bool);
 
     function pureColorForFontWeight(uint256 font)
         external
         view
-        returns (bytes3 color);
+        returns (bytes3);
 
-    function htmlSafeTextOf(uint256 capsuleId)
+    function stringTextOf(uint256 capsuleId)
         external
-        returns (string[8] memory safeText);
+        returns (string[8] memory);
 
-    function colorOf(uint256 capsuleId) external view returns (bytes3 color);
+    function colorOf(uint256 capsuleId) external view returns (bytes3);
 
     function textOf(uint256 capsuleId)
         external
         view
-        returns (bytes2[16][8] memory text);
+        returns (bytes4[16][8] memory);
 
-    function fontOf(uint256 capsuleId) external view returns (Font memory font);
+    function fontOf(uint256 capsuleId) external view returns (Font memory);
 
-    function isLocked(uint256 capsuleId) external view returns (bool locked);
+    function isLocked(uint256 capsuleId) external view returns (bool);
 
     function svgOf(uint256 capsuleId) external view returns (string memory);
 
@@ -78,18 +78,18 @@ interface ICapsuleToken {
     function mintWithText(
         bytes3 color,
         Font calldata font,
-        bytes2[16][8] calldata text
+        bytes4[16][8] calldata text
     ) external payable returns (uint256);
 
     function mintPureColorForFont(address to, Font calldata font)
         external
-        returns (uint256 capsuleId);
+        returns (uint256);
 
     function lockCapsule(uint256 capsuleId) external;
 
     function editCapsule(
         uint256 capsuleId,
-        bytes2[16][8] calldata text,
+        bytes4[16][8] calldata text,
         Font calldata font,
         bool lock
     ) external;
@@ -100,7 +100,7 @@ interface ICapsuleToken {
 
     function setDefaultCapsuleRenderer(address _capsuleRenderer) external;
 
-    function isValidTextForRenderer(bytes2[16][8] memory text, address renderer)
+    function isValidTextForRenderer(bytes4[16][8] memory text, address renderer)
         external
         view
         returns (bool);

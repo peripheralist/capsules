@@ -1,5 +1,5 @@
 {
-      "address": "0x1401a1522f8609765D8a9D7E7cb40C11badcF619", 
+      "address": "0xd031f3613734734F8AA697F244802f6cd0d3D283", 
       "abi": [
   {
     "inputs": [
@@ -33,9 +33,9 @@
             "type": "tuple"
           },
           {
-            "internalType": "bytes2[16][8]",
+            "internalType": "bytes4[16][8]",
             "name": "text",
-            "type": "bytes2[16][8]"
+            "type": "bytes4[16][8]"
           },
           {
             "internalType": "bool",

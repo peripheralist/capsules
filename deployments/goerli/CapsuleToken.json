@@ -1,5 +1,5 @@
 {
-      "address": "0xBA41b6360D77320Eaa411a070F246480EAFc7035", 
+      "address": "0xE3aB864f6e278509203A1f76f18AfF7ec658Fd15", 
       "abi": [
   {
     "inputs": [
@@ -545,9 +545,9 @@
             "type": "tuple"
           },
           {
-            "internalType": "bytes2[16][8]",
+            "internalType": "bytes4[16][8]",
             "name": "text",
-            "type": "bytes2[16][8]"
+            "type": "bytes4[16][8]"
           },
           {
             "internalType": "bool",
@@ -621,9 +621,9 @@
         "type": "uint256"
       },
       {
-        "internalType": "bytes2[16][8]",
+        "internalType": "bytes4[16][8]",
         "name": "text",
-        "type": "bytes2[16][8]"
+        "type": "bytes4[16][8]"
       },
       {
         "components": [
@@ -711,25 +711,6 @@
         "internalType": "address",
         "name": "",
         "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "capsuleId",
-        "type": "uint256"
-      }
-    ],
-    "name": "htmlSafeTextOf",
-    "outputs": [
-      {
-        "internalType": "string[8]",
-        "name": "safeText",
-        "type": "string[8]"
       }
     ],
     "stateMutability": "view",
@@ -855,9 +836,9 @@
   {
     "inputs": [
       {
-        "internalType": "bytes2[16][8]",
+        "internalType": "bytes4[16][8]",
         "name": "text",
-        "type": "bytes2[16][8]"
+        "type": "bytes4[16][8]"
       },
       {
         "internalType": "address",
@@ -986,9 +967,9 @@
         "type": "tuple"
       },
       {
-        "internalType": "bytes2[16][8]",
+        "internalType": "bytes4[16][8]",
         "name": "text",
-        "type": "bytes2[16][8]"
+        "type": "bytes4[16][8]"
       }
     ],
     "name": "mintWithText",
@@ -1315,6 +1296,25 @@
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "capsuleId",
+        "type": "uint256"
+      }
+    ],
+    "name": "stringTextOf",
+    "outputs": [
+      {
+        "internalType": "string[8]",
+        "name": "",
+        "type": "string[8]"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "bytes4",
         "name": "interfaceId",
         "type": "bytes4"
@@ -1374,9 +1374,9 @@
     "name": "textOf",
     "outputs": [
       {
-        "internalType": "bytes2[16][8]",
+        "internalType": "bytes4[16][8]",
         "name": "",
-        "type": "bytes2[16][8]"
+        "type": "bytes4[16][8]"
       }
     ],
     "stateMutability": "view",

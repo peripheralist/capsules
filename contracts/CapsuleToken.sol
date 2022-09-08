@@ -7,7 +7,7 @@
 
   @notice Each Capsule token has a unique color and a custom text rendered as a SVG. The text and font for a Capsule can be updated at any time by its owner.
 
-  @dev `bytes3` type is used to store the rgb hex-encoded color that is unique to each capsule. `bytes2[16][8]` type is used to store text for Capsules: 8 lines of 16 bytes2 characters each. Because the Capsules typeface is not limited to ascii characters (1 byte), we use bytes2 to support characters that require more than 1 byte to encode.
+  @dev `bytes3` type is used to store the rgb hex-encoded color that is unique to each capsule. `bytes4[16][8]` type is used to store text for Capsules: 8 lines of 16 bytes4 characters each. Because the Capsules typeface is not limited to ascii characters (1 byte), we use bytes4 to support characters that require more than 1 byte to encode.
  */
 
 pragma solidity 0.8.14;
@@ -168,7 +168,7 @@ contract CapsuleToken is
     uint256 public royalty;
 
     /// Mapping of Capsule ID to text
-    mapping(uint256 => bytes2[16][8]) internal _textOf;
+    mapping(uint256 => bytes4[16][8]) internal _textOf;
 
     /// Mapping of Capsule ID to color
     mapping(uint256 => bytes3) internal _colorOf;
@@ -217,7 +217,7 @@ contract CapsuleToken is
     function mintWithText(
         bytes3 color,
         Font calldata font,
-        bytes2[16][8] calldata text
+        bytes4[16][8] calldata text
     ) external payable nonReentrant returns (uint256 capsuleId) {
         return _mintWithText(color, font, text);
     }
@@ -311,14 +311,14 @@ contract CapsuleToken is
 
     /// @notice Returns formatted version of Capsule text that is safe to render in HTML, using the renderer for that Capsule.
     /// @param capsuleId ID of Capsule.
-    /// @return safeText Formatted Capsule text.
-    function htmlSafeTextOf(uint256 capsuleId)
+    /// @return stringText Formatted Capsule text.
+    function stringTextOf(uint256 capsuleId)
         public
         view
-        returns (string[8] memory safeText)
+        returns (string[8] memory)
     {
         return
-            ICapsuleRenderer(rendererOf(capsuleId)).htmlSafeText(
+            ICapsuleRenderer(rendererOf(capsuleId)).stringText(
                 _textOf[capsuleId]
             );
     }
@@ -332,11 +332,11 @@ contract CapsuleToken is
 
     /// @notice Returns text of Capsule token with ID.
     /// @param capsuleId ID of Capsule.
-    /// @return text Text of Capsule as nested bytes2 array.
+    /// @return text Text of Capsule as nested bytes4 array.
     function textOf(uint256 capsuleId)
         public
         view
-        returns (bytes2[16][8] memory)
+        returns (bytes4[16][8] memory)
     {
         return _textOf[capsuleId];
     }
@@ -378,7 +378,7 @@ contract CapsuleToken is
     /// @param text Text to check validity of. 8 lines of 16 bytes3 characters in 2d array.
     /// @param renderer Address of renderer.
     /// @return true True if text is valid.
-    function isValidTextForRenderer(bytes2[16][8] memory text, address renderer)
+    function isValidTextForRenderer(bytes4[16][8] memory text, address renderer)
         public
         view
         returns (bool)
@@ -462,7 +462,7 @@ contract CapsuleToken is
     /// @param font New font weight for Capsule.
     function editCapsule(
         uint256 capsuleId,
-        bytes2[16][8] calldata text,
+        bytes4[16][8] calldata text,
         Font calldata font,
         bool lock
     ) public {
@@ -592,7 +592,7 @@ contract CapsuleToken is
     function _mintWithText(
         bytes3 color,
         Font calldata font,
-        bytes2[16][8] calldata text
+        bytes4[16][8] calldata text
     )
         internal
         whenNotPaused
@@ -615,7 +615,7 @@ contract CapsuleToken is
 
     function _editCapsule(
         uint256 capsuleId,
-        bytes2[16][8] calldata text,
+        bytes4[16][8] calldata text,
         Font calldata font,
         bool lock
     )

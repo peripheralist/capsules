@@ -30,15 +30,15 @@ export const fontHashes = Object.values(FONTS).map((font) =>
   keccak256(Buffer.from(font))
 );
 
-export const textToBytes2Lines = (text: string[]) => {
+export const textToBytes4Lines = (text: string[]) => {
   const lines = [];
   for (let i = 0; i < 8; i++) {
-    lines.push(stringToBytes2Line(text.length > i ? text[i] : undefined));
+    lines.push(stringToBytes4Line(text.length > i ? text[i] : undefined));
   }
   return lines;
 };
 
-export const stringToBytes2Line = (str?: string) => {
+export const stringToBytes4Line = (str?: string) => {
   const arr: string[] = [];
   for (let i = 0; i < 16; i++) {
     let byte = "00000000";
@@ -50,7 +50,7 @@ export const stringToBytes2Line = (str?: string) => {
   return arr;
 };
 
-export const emptyNote = textToBytes2Lines([]);
+export const emptyNote = textToBytes4Lines([]);
 
 export async function skipToBlockNumber(seconds: number) {
   await ethers.provider.send("evm_mine", [seconds]);

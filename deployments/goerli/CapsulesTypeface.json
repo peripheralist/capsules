@@ -1,5 +1,5 @@
 {
-      "address": "0xC4b6fA9263e734f4fc0fEf0734b722EE0053A436", 
+      "address": "0x0840eEB64843eE71e322126c1C519a9D6FeB833C", 
       "abi": [
   {
     "inputs": [
@@ -137,12 +137,12 @@
   {
     "inputs": [
       {
-        "internalType": "bytes2",
+        "internalType": "bytes4",
         "name": "char",
-        "type": "bytes2"
+        "type": "bytes4"
       }
     ],
-    "name": "isSupportedBytes2",
+    "name": "isSupportedBytes4",
     "outputs": [
       {
         "internalType": "bool",

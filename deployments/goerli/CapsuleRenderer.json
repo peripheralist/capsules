@@ -1,5 +1,5 @@
 {
-      "address": "0xD6e2f558AF90B0a02D7A333b41f87125Ed063c0C", 
+      "address": "0xd76c995c74713ae976926779F3Eeb3933285994F", 
       "abi": [
   {
     "inputs": [
@@ -23,25 +23,6 @@
       }
     ],
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes2[16][8]",
-        "name": "text",
-        "type": "bytes2[16][8]"
-      }
-    ],
-    "name": "htmlSafeText",
-    "outputs": [
-      {
-        "internalType": "string[8]",
-        "name": "safeText",
-        "type": "string[8]"
-      }
-    ],
-    "stateMutability": "pure",
     "type": "function"
   },
   {
@@ -78,9 +59,9 @@
   {
     "inputs": [
       {
-        "internalType": "bytes2[16][8]",
+        "internalType": "bytes4[16][8]",
         "name": "text",
-        "type": "bytes2[16][8]"
+        "type": "bytes4[16][8]"
       }
     ],
     "name": "isValidText",
@@ -92,6 +73,25 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes4[16][8]",
+        "name": "text",
+        "type": "bytes4[16][8]"
+      }
+    ],
+    "name": "stringText",
+    "outputs": [
+      {
+        "internalType": "string[8]",
+        "name": "_stringText",
+        "type": "string[8]"
+      }
+    ],
+    "stateMutability": "pure",
     "type": "function"
   },
   {
@@ -126,9 +126,9 @@
             "type": "tuple"
           },
           {
-            "internalType": "bytes2[16][8]",
+            "internalType": "bytes4[16][8]",
             "name": "text",
-            "type": "bytes2[16][8]"
+            "type": "bytes4[16][8]"
           },
           {
             "internalType": "bool",
@@ -144,13 +144,18 @@
         "internalType": "struct Capsule",
         "name": "capsule",
         "type": "tuple"
+      },
+      {
+        "internalType": "bool",
+        "name": "square",
+        "type": "bool"
       }
     ],
     "name": "svgOf",
     "outputs": [
       {
         "internalType": "string",
-        "name": "",
+        "name": "base64Svg",
         "type": "string"
       }
     ],
@@ -189,9 +194,9 @@
             "type": "tuple"
           },
           {
-            "internalType": "bytes2[16][8]",
+            "internalType": "bytes4[16][8]",
             "name": "text",
-            "type": "bytes2[16][8]"
+            "type": "bytes4[16][8]"
           },
           {
             "internalType": "bool",
@@ -207,18 +212,13 @@
         "internalType": "struct Capsule",
         "name": "capsule",
         "type": "tuple"
-      },
-      {
-        "internalType": "bool",
-        "name": "square",
-        "type": "bool"
       }
     ],
     "name": "svgOf",
     "outputs": [
       {
         "internalType": "string",
-        "name": "base64Svg",
+        "name": "",
         "type": "string"
       }
     ],
