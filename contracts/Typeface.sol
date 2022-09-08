@@ -8,9 +8,13 @@ import "./interfaces/ITypeface.sol";
 
   @author peri
 
-  @notice The Typeface contract allows storing and retrieving font source data. Font sources can be large and cost large amounts of gas to store. To save gas or avoid surpassing gas limits while deploying a contract containing font source data, only a hash of the data is stored when the contract is deployed. This allows font data to be stored in later transactions, provided the data matches the corresponding hash. Fonts are identified by the Font struct, which includes "style" and "weight" properties.
+  @notice The Typeface contract allows storing and retrieving a "source", such as a base64-encoded file, for all fonts in a typeface.
 
-  Four functions allow specifying which characters are supported by a typeface. ASCII characters can be encoded in a single byte, so typefaces using only this charset can override `isSupportedByte(bytes1)` to determine if a character is supported. For more complex characters requiring more than 1 byte to encode, `isSupportedBytes2(bytes2)`, `isSupportedBytes3(bytes3)`, or `isSupportedBytes4(bytes4)` should be used.
+  Sources may be large and require a high gas fee to store. To reduce gas costs while deploying a contract containing source data, or to avoid surpassing gas limits of the deploy transaction block, only a hash of each source is stored when the contract is deployed. This allows sources to be stored in later transactions, ensuring the hash of the source matches the hash stored for that font.
+
+  Once the Typeface contract has been deployed, source hashes can't be added or modified.
+
+  Fonts are identified by the Font struct, which includes "style" and "weight" properties.
  */
 
 abstract contract Typeface is ITypeface {

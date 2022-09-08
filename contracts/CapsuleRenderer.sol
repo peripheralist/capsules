@@ -41,6 +41,10 @@ contract CapsuleRenderer is ICapsuleRenderer {
         capsulesTypeface = _capsulesTypeface;
     }
 
+    function typeface() external view returns (address) {
+        return capsulesTypeface;
+    }
+
     /// @notice Return Base64-encoded square SVG for Capsule
     /// @param capsule Capsule to return SVG for
     /// @return svg SVG for Capsule
@@ -69,7 +73,7 @@ contract CapsuleRenderer is ICapsuleRenderer {
                 text: _defaultTextOf(capsule.color),
                 id: capsule.id,
                 color: capsule.color,
-                fontWeight: capsule.fontWeight,
+                font: capsule.font,
                 isPure: capsule.isPure,
                 isLocked: capsule.isLocked
             });
@@ -84,6 +88,7 @@ contract CapsuleRenderer is ICapsuleRenderer {
                 memory dots1x12 = '<g id="dots1x12"><circle cx="2" cy="2" r="1.5"></circle><circle cx="2" cy="6" r="1.5"></circle><circle cx="2" cy="10" r="1.5"></circle><circle cx="2" cy="14" r="1.5"></circle><circle cx="2" cy="18" r="1.5"></circle><circle cx="2" cy="22" r="1.5"></circle><circle cx="2" cy="26" r="1.5"></circle><circle cx="2" cy="30" r="1.5"></circle><circle cx="2" cy="34" r="1.5"></circle><circle cx="2" cy="38" r="1.5"></circle><circle cx="2" cy="42" r="1.5"></circle><circle cx="2" cy="46" r="1.5"></circle></g>';
 
             // <g> row of dots 1 dot high that spans entire canvas width
+            // TODO trim corner dots if locked
             bytes memory edgeRowDots;
             edgeRowDots = abi.encodePacked('<g id="', specs.edgeRowId, '">');
             for (uint256 i; i < specs.textAreaWidthDots; i++) {
@@ -115,17 +120,18 @@ contract CapsuleRenderer is ICapsuleRenderer {
         // Define <style> for svg element
         bytes memory style;
         {
+            string memory fontWeightString = Strings.toString(
+                capsule.font.weight
+            );
             style = abi.encodePacked(
                 "<style>.capsules-",
-                Strings.toString(capsule.fontWeight),
+                fontWeightString,
                 "{ font-size: 40px; white-space: pre; font-family: Capsules-",
-                Strings.toString(capsule.fontWeight),
+                fontWeightString,
                 ' } @font-face { font-family: "Capsules-',
-                Strings.toString(capsule.fontWeight),
+                fontWeightString,
                 '"; src: url(data:font/truetype;charset=utf-8;base64,',
-                ITypeface(capsulesTypeface).sourceOf(
-                    Font({weight: capsule.fontWeight, style: "normal"})
-                ),
+                ITypeface(capsulesTypeface).sourceOf(capsule.font),
                 ') format("opentype")}</style>'
             );
         }
@@ -210,7 +216,7 @@ contract CapsuleRenderer is ICapsuleRenderer {
                     '<text y="',
                     Strings.toString(48 * i),
                     '" class="capsules-',
-                    Strings.toString(capsule.fontWeight),
+                    Strings.toString(capsule.font.weight),
                     '">',
                     _htmlSafeLine(capsule.text[i]),
                     "</text>"
@@ -268,6 +274,32 @@ contract CapsuleRenderer is ICapsuleRenderer {
                 )
             );
         }
+    }
+
+    /// @notice Check if text is valid.
+    /// @dev Text is valid if every bytes is supported by CapsulesTypeface, or is 0x00.
+    /// @param text Text to check validity of. 8 lines of 16 bytes3 characters in 2d array.
+    /// @return true True if text is valid.
+    function isValidText(bytes2[16][8] memory text) public view returns (bool) {
+        unchecked {
+            for (uint256 i; i < 8; i++) {
+                bytes2[16] memory line = text[i];
+
+                for (uint256 j; j < 16; j++) {
+                    bytes2 char = line[j];
+
+                    // return false if any single character is unsupported
+                    if (
+                        !ITypeface(capsulesTypeface).isSupportedBytes2(char) &&
+                        char != bytes2(0)
+                    ) {
+                        return false;
+                    }
+                }
+            }
+        }
+
+        return true;
     }
 
     /// @notice Check if line is empty
@@ -391,6 +423,14 @@ contract CapsuleRenderer is ICapsuleRenderer {
         }
     }
 
+    /// @notice Check if font weight is valid.
+    /// @dev A font is valid if its source has been set in the CapsulesTypeface contract.
+    /// @param font Font to check validity of.
+    /// @return true True if font weight is valid.
+    function isValidFont(Font memory font) external view returns (bool) {
+        return ITypeface(capsulesTypeface).hasSource(font);
+    }
+
     /// @notice Returns html-safe version of a line of text
     /// @dev Iterates through each byte in line of text and replaces each byte as needed to create a string that will render in html without issue. Ensures that no illegal characters or 0x00 bytes remain. Non-trailing 0x00 bytes are converted to spaces, trailing 0x00 bytes are trimmed.
     /// @param line Line of text to render safe.
@@ -419,7 +459,7 @@ contract CapsuleRenderer is ICapsuleRenderer {
                 safeLine = string.concat("&amp;", safeLine);
             } else {
                 // If bytes2 character is html-safe, we add it while removing individual 0x0 bytes, which cannot be rendered.
-                for (uint256 j = 4; j > 0; j--) {
+                for (uint256 j = 2; j > 0; j--) {
                     if (char[j - 1] != bytes1(0)) {
                         safeLine = string(
                             abi.encodePacked(char[j - 1], safeLine)

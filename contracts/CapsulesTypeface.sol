@@ -27,34 +27,34 @@ contract CapsulesTypeface is Typeface {
         capsuleToken = ICapsuleToken(_capsuleToken);
     }
 
-    /// @notice Returns true if bytes1 char is supported by CapsulesTypeface. Requires less gas than checking supported bytes2 chars.
-    function isSupportedByte(bytes1 char) external pure returns (bool) {
-        // Optimize gas by first checking outer bound of byte ranges
-        if (char < 0x20) return false;
+    // /// @notice Returns true if bytes1 char is supported by CapsulesTypeface. Requires less gas than checking supported bytes2 chars.
+    // function isSupportedByte(bytes1 char) external pure returns (bool) {
+    //     // Optimize gas by first checking outer bound of byte ranges
+    //     if (char < 0x20) return false;
 
-        return (char <= 0x7e ||
-            (char >= 0xa0 && char <= 0xa8) ||
-            (char >= 0xab && char <= 0xac) ||
-            (char >= 0xaf && char <= 0xb1) ||
-            char == 0xb4 ||
-            (char >= 0xb6 && char <= 0xb7) ||
-            (char >= 0xba && char <= 0xbb) ||
-            (char >= 0xbf && char <= 0xc4) ||
-            (char >= 0xc6 && char <= 0xcf) ||
-            (char >= 0xd1 && char <= 0xd7) ||
-            (char >= 0xd9 && char <= 0xdc) ||
-            (char >= 0xe0 && char <= 0xe4) ||
-            (char >= 0xe6 && char <= 0xef) ||
-            (char >= 0xf1 && char <= 0xfc) ||
-            char == 0xff);
-    }
+    //     return (char <= 0x7e ||
+    //         (char >= 0xa0 && char <= 0xa8) ||
+    //         (char >= 0xab && char <= 0xac) ||
+    //         (char >= 0xaf && char <= 0xb1) ||
+    //         char == 0xb4 ||
+    //         (char >= 0xb6 && char <= 0xb7) ||
+    //         (char >= 0xba && char <= 0xbb) ||
+    //         (char >= 0xbf && char <= 0xc4) ||
+    //         (char >= 0xc6 && char <= 0xcf) ||
+    //         (char >= 0xd1 && char <= 0xd7) ||
+    //         (char >= 0xd9 && char <= 0xdc) ||
+    //         (char >= 0xe0 && char <= 0xe4) ||
+    //         (char >= 0xe6 && char <= 0xef) ||
+    //         (char >= 0xf1 && char <= 0xfc) ||
+    //         char == 0xff);
+    // }
 
-    /// @notice Returns true if bytes2 char is supported by CapsulesTypeface. More bytes2 characters are supported than bytes1 characters, due to non-ascii characters requiring more than 1 byte to encode.
+    /// @notice Returns true if bytes2 char is supported by CapsulesTypeface.
     function isSupportedBytes2(bytes2 char) external pure returns (bool) {
         // Optimize gas by first checking outer bounds of byte ranges
         if (char < 0x0020 || char > 0xe069) return false;
 
-        return (char <= 0x007e ||
+        return ((char >= 0x0020 && char <= 0x007e) ||
             (char >= 0x00a0 && char <= 0x00a8) ||
             (char >= 0x00ab && char <= 0x00ac) ||
             (char >= 0x00af && char <= 0x00b1) ||
@@ -75,13 +75,29 @@ contract CapsulesTypeface is Typeface {
             (char >= 0x014c && char <= 0x014d) ||
             (char >= 0x0168 && char <= 0x016b) ||
             char == 0x0178 ||
+            char == 0x018e ||
             char == 0x0192 ||
+            char == 0x0262 ||
+            char == 0x026a ||
+            char == 0x0274 ||
+            (char >= 0x0280 && char <= 0x0281) ||
+            char == 0x028f ||
+            char == 0x0299 ||
+            char == 0x029c ||
+            char == 0x029f ||
             (char >= 0x02c2 && char <= 0x02c3) ||
             char == 0x02c6 ||
             char == 0x02dc ||
             char == 0x039e ||
             char == 0x03c0 ||
             char == 0x0e3f ||
+            (char >= 0x1d00 && char <= 0x1d01) ||
+            char == 0x1d05 ||
+            char == 0x1d07 ||
+            (char >= 0x1d0a && char <= 0x1d0b) ||
+            (char >= 0x1d0d && char <= 0x1d0e) ||
+            (char >= 0x1d18 && char <= 0x1d19) ||
+            char == 0x1d1b ||
             (char >= 0x2013 && char <= 0x2015) ||
             (char >= 0x2017 && char <= 0x201a) ||
             (char >= 0x201c && char <= 0x201e) ||
@@ -98,6 +114,7 @@ contract CapsulesTypeface is Typeface {
             char == 0x20b4 ||
             char == 0x20bd ||
             char == 0x20bf ||
+            char == 0x2184 ||
             (char >= 0x2190 && char <= 0x2199) ||
             (char >= 0x21ba && char <= 0x21bb) ||
             char == 0x2206 ||
@@ -133,21 +150,17 @@ contract CapsulesTypeface is Typeface {
             char == 0x2713 ||
             (char >= 0x2b05 && char <= 0x2b0d) ||
             char == 0x2b95 ||
+            char == 0xa730 ||
+            char == 0xa7af ||
             (char >= 0xe000 && char <= 0xe02b) ||
             char == 0xe069);
     }
-
-    /// @notice No characters in the Capsules Typeface require more than 2 bytes to encode. bytes3 values should be converted to bytes2 and validated using `isSupportedBytes2()`.
-    function isSupportedBytes3(bytes3) external pure returns (bool) {}
-
-    /// @notice No characters in the Capsules Typeface require more than 2 bytes to encode. bytes4 values should be converted to bytes2 and validated using `isSupportedBytes2()`.
-    function isSupportedBytes4(bytes4) external pure returns (bool) {}
 
     /// @notice Mint pure color Capsule token to sender when sender sets fontSrc.
     function _afterSetSource(Font calldata font, bytes calldata)
         internal
         override(Typeface)
     {
-        capsuleToken.mintPureColorForFontWeight(msg.sender, font.weight);
+        capsuleToken.mintPureColorForFont(msg.sender, font);
     }
 }

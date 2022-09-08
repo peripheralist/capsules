@@ -906,7 +906,7 @@
         "type": "bytes16[8]"
       }
     ],
-    "name": "mintPureColorForFontWeight",
+    "name": "mintPureColorForFont",
     "outputs": [
       {
         "internalType": "uint256",
@@ -1179,9 +1179,9 @@
   {
     "inputs": [
       {
-        "internalType": "bytes4",
+        "internalType": "bytes2",
         "name": "interfaceId",
-        "type": "bytes4"
+        "type": "bytes2"
       }
     ],
     "name": "supportsInterface",

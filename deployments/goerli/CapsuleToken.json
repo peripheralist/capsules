@@ -1,5 +1,5 @@
 {
-      "address": "0x294dFD4fC66A9b3f623B91772902C6e2F148C1Bc", 
+      "address": "0xBA41b6360D77320Eaa411a070F246480EAFc7035", 
       "abi": [
   {
     "inputs": [
@@ -85,12 +85,7 @@
   },
   {
     "inputs": [],
-    "name": "InvalidFontWeight",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "InvalidText",
+    "name": "InvalidFont",
     "type": "error"
   },
   {
@@ -533,14 +528,26 @@
             "type": "bytes3"
           },
           {
-            "internalType": "uint256",
-            "name": "fontWeight",
-            "type": "uint256"
+            "components": [
+              {
+                "internalType": "uint256",
+                "name": "weight",
+                "type": "uint256"
+              },
+              {
+                "internalType": "string",
+                "name": "style",
+                "type": "string"
+              }
+            ],
+            "internalType": "struct Font",
+            "name": "font",
+            "type": "tuple"
           },
           {
-            "internalType": "bytes4[16][8]",
+            "internalType": "bytes2[16][8]",
             "name": "text",
-            "type": "bytes4[16][8]"
+            "type": "bytes2[16][8]"
           },
           {
             "internalType": "bool",
@@ -614,14 +621,26 @@
         "type": "uint256"
       },
       {
-        "internalType": "bytes4[16][8]",
+        "internalType": "bytes2[16][8]",
         "name": "text",
-        "type": "bytes4[16][8]"
+        "type": "bytes2[16][8]"
       },
       {
-        "internalType": "uint256",
-        "name": "fontWeight",
-        "type": "uint256"
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "weight",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "style",
+            "type": "string"
+          }
+        ],
+        "internalType": "struct Font",
+        "name": "font",
+        "type": "tuple"
       },
       {
         "internalType": "bool",
@@ -655,12 +674,24 @@
         "type": "uint256"
       }
     ],
-    "name": "fontWeightOf",
+    "name": "fontOf",
     "outputs": [
       {
-        "internalType": "uint256",
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "weight",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "style",
+            "type": "string"
+          }
+        ],
+        "internalType": "struct Font",
         "name": "",
-        "type": "uint256"
+        "type": "tuple"
       }
     ],
     "stateMutability": "view",
@@ -697,7 +728,7 @@
     "outputs": [
       {
         "internalType": "string[8]",
-        "name": "",
+        "name": "safeText",
         "type": "string[8]"
       }
     ],
@@ -769,6 +800,85 @@
   {
     "inputs": [
       {
+        "internalType": "bytes3",
+        "name": "color",
+        "type": "bytes3"
+      }
+    ],
+    "name": "isValidColor",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "weight",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "style",
+            "type": "string"
+          }
+        ],
+        "internalType": "struct Font",
+        "name": "font",
+        "type": "tuple"
+      },
+      {
+        "internalType": "address",
+        "name": "renderer",
+        "type": "address"
+      }
+    ],
+    "name": "isValidFontForRenderer",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes2[16][8]",
+        "name": "text",
+        "type": "bytes2[16][8]"
+      },
+      {
+        "internalType": "address",
+        "name": "renderer",
+        "type": "address"
+      }
+    ],
+    "name": "isValidTextForRenderer",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "uint256",
         "name": "capsuleId",
         "type": "uint256"
@@ -787,9 +897,21 @@
         "type": "bytes3"
       },
       {
-        "internalType": "uint256",
-        "name": "fontWeight",
-        "type": "uint256"
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "weight",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "style",
+            "type": "string"
+          }
+        ],
+        "internalType": "struct Font",
+        "name": "font",
+        "type": "tuple"
       }
     ],
     "name": "mint",
@@ -811,12 +933,24 @@
         "type": "address"
       },
       {
-        "internalType": "uint256",
-        "name": "fontWeight",
-        "type": "uint256"
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "weight",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "style",
+            "type": "string"
+          }
+        ],
+        "internalType": "struct Font",
+        "name": "font",
+        "type": "tuple"
       }
     ],
-    "name": "mintPureColorForFontWeight",
+    "name": "mintPureColorForFont",
     "outputs": [
       {
         "internalType": "uint256",
@@ -835,14 +969,26 @@
         "type": "bytes3"
       },
       {
-        "internalType": "uint256",
-        "name": "fontWeight",
-        "type": "uint256"
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "weight",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "style",
+            "type": "string"
+          }
+        ],
+        "internalType": "struct Font",
+        "name": "font",
+        "type": "tuple"
       },
       {
-        "internalType": "bytes4[16][8]",
+        "internalType": "bytes2[16][8]",
         "name": "text",
-        "type": "bytes4[16][8]"
+        "type": "bytes2[16][8]"
       }
     ],
     "name": "mintWithText",
@@ -1113,7 +1259,7 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_capsuleRenderer",
+        "name": "renderer",
         "type": "address"
       }
     ],
@@ -1228,9 +1374,9 @@
     "name": "textOf",
     "outputs": [
       {
-        "internalType": "bytes4[16][8]",
+        "internalType": "bytes2[16][8]",
         "name": "",
-        "type": "bytes4[16][8]"
+        "type": "bytes2[16][8]"
       }
     ],
     "stateMutability": "view",

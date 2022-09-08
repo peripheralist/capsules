@@ -32,25 +32,32 @@ contract CapsuleMetadata is ICapsuleMetadata {
         if (capsule.isPure) pureText = "yes";
         if (capsule.isLocked) lockedText = "yes";
 
+        bytes memory metadata = abi.encodePacked(
+            '{"name": "Capsule ',
+            Strings.toString(capsule.id),
+            '", "description": "7,957 NFTs with unique colors and editable text rendered as SVGs on-chain. 7 pure colors are reserved for wallets that pay gas to store one of the 7 Capsules typeface fonts in the CapsulesTypeface contract.", "image": "',
+            image
+        );
+
+        // Split encoding into two chunks to avoid stack too deep
+        metadata = abi.encodePacked(
+            metadata,
+            '", "attributes": [{"trait_type": "Color", "value": "#',
+            _bytes3ToHexChars(capsule.color),
+            '"}, {"font": "',
+            Strings.toString(capsule.font.weight),
+            '"}, {"pure": "',
+            pureText,
+            '"}, {"locked": "',
+            lockedText,
+            '"}]}'
+        );
+
         return
             string(
                 abi.encodePacked(
                     "data:application/json;base64,",
-                    Base64.encode(
-                        abi.encodePacked(
-                            '{"name": "Capsule ',
-                            Strings.toString(capsule.id),
-                            '", "description": "7,957 NFTs with unique colors and editable text rendered as SVGs on-chain. 7 pure colors are reserved for wallets that pay gas to store one of the 7 Capsules typeface fonts in the CapsulesTypeface contract.", "image": "',
-                            image,
-                            '", "attributes": [{"trait_type": "Color", "value": "#',
-                            _bytes3ToHexChars(capsule.color),
-                            '"}, {"pure": "',
-                            pureText,
-                            '}, {"locked": "',
-                            lockedText,
-                            '"}]}'
-                        )
-                    )
+                    Base64.encode(metadata)
                 )
             );
     }

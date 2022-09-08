@@ -34,10 +34,10 @@ describe("Capsules", async () => {
     const { contract: _capsuleMetadata } = await deployCapsuleMetadata();
     capsuleMetadata = _capsuleMetadata;
 
-    let nonce = await deployer.getTransactionCount();
+    const nonce = await deployer.getTransactionCount();
     const expectedCapsuleTokenAddress = utils.getContractAddress({
       from: deployer.address,
-      nonce: nonce + 2,
+      nonce: nonce + 2, // This should be 3 (see deploy.ts) unsure why 2 works
     });
 
     const { contract: _capsulesTypeface } = await deployCapsulesTypeface(
@@ -188,35 +188,34 @@ describe("Capsules", async () => {
       const { minter1 } = await wallets();
 
       return expect(
-        signingContract(capsuleToken, minter1).mint("0x0005ff", 100, {
-          value: mintPrice,
-        })
-      ).to.be.revertedWith("InvalidFontWeight()");
+        signingContract(capsuleToken, minter1).mint(
+          "0x0005ff",
+          {
+            weight: 100,
+            style: "normal",
+          },
+          {
+            value: mintPrice,
+          }
+        )
+      ).to.be.revertedWith("InvalidFont()");
     });
 
     it("Mint with invalid color should revert", async () => {
       const { minter1 } = await wallets();
 
       return expect(
-        signingContract(capsuleToken, minter1).mint("0x0000fe", 400, {
-          value: mintPrice,
-        })
-      ).to.be.revertedWith("InvalidColor()");
-    });
-
-    it("Mint with invalid text should revert, if validating text", async () => {
-      const { minter1 } = await wallets();
-
-      await expect(
-        signingContract(capsuleToken, minter1).mintWithValidText(
-          "0x000aff",
-          400,
-          textToBytes2Lines(["®"]),
+        signingContract(capsuleToken, minter1).mint(
+          "0x0000fe",
+          {
+            weight: 100,
+            style: "normal",
+          },
           {
             value: mintPrice,
           }
         )
-      ).to.be.revertedWith("InvalidText()");
+      ).to.be.revertedWith("InvalidColor()");
     });
 
     it("Mint with invalid text should succeed, if not validating text", async () => {
@@ -224,7 +223,10 @@ describe("Capsules", async () => {
 
       await signingContract(capsuleToken, minter1).mintWithText(
         "0x000aff",
-        400,
+        {
+          weight: 400,
+          style: "normal",
+        },
         textToBytes2Lines(["®"]),
         {
           value: mintPrice,
@@ -236,9 +238,16 @@ describe("Capsules", async () => {
       const { owner } = await wallets();
 
       return expect(
-        signingContract(capsuleToken, owner).mint("0x0005ff", 400, {
-          value: mintPrice.sub(1),
-        })
+        signingContract(capsuleToken, owner).mint(
+          "0x0005ff",
+          {
+            weight: 400,
+            style: "normal",
+          },
+          {
+            value: mintPrice.sub(1),
+          }
+        )
       ).to.be.revertedWith("ValueBelowMintPrice()");
     });
 
@@ -246,9 +255,16 @@ describe("Capsules", async () => {
       const { minter1 } = await wallets();
 
       return expect(
-        signingContract(capsuleToken, minter1).mint("0x0000ff", 400, {
-          value: mintPrice,
-        })
+        signingContract(capsuleToken, minter1).mint(
+          "0x0000ff",
+          {
+            weight: 400,
+            style: "normal",
+          },
+          {
+            value: mintPrice,
+          }
+        )
       ).to.be.revertedWith("PureColorNotAllowed()");
     });
 
@@ -257,14 +273,19 @@ describe("Capsules", async () => {
 
       const minter1CapsuleToken = signingContract(capsuleToken, minter1);
 
-      const fontWeight = 400;
-
       const color = "0x0005ff";
 
       return expect(
-        minter1CapsuleToken.mint(color, fontWeight, {
-          value: mintPrice,
-        })
+        minter1CapsuleToken.mint(
+          color,
+          {
+            weight: 400,
+            style: "normal",
+          },
+          {
+            value: mintPrice,
+          }
+        )
       )
         .to.emit(minter1CapsuleToken, "MintCapsule")
         .withArgs(3, minter1.address, color);
@@ -275,39 +296,25 @@ describe("Capsules", async () => {
 
       const minter1CapsuleToken = signingContract(capsuleToken, minter1);
 
-      const fontWeight = 400;
-
       const color = "0x00aaff";
 
       const text = textToBytes2Lines(["asdf"]);
 
       return expect(
-        minter1CapsuleToken.mintWithText(color, fontWeight, text, {
-          value: mintPrice,
-        })
+        minter1CapsuleToken.mintWithText(
+          color,
+          {
+            weight: 400,
+            style: "normal",
+          },
+          text,
+          {
+            value: mintPrice,
+          }
+        )
       )
         .to.emit(minter1CapsuleToken, "MintCapsule")
         .withArgs(4, minter1.address, color);
-    });
-
-    it("Mint with valid color and text should succeed, if validating text", async () => {
-      const { minter1 } = await wallets();
-
-      const minter1CapsuleToken = signingContract(capsuleToken, minter1);
-
-      const fontWeight = 400;
-
-      const color = "0x00a0ff";
-
-      const text = textToBytes2Lines(["asdf"]);
-
-      return expect(
-        minter1CapsuleToken.mintWithValidText(color, fontWeight, text, {
-          value: mintPrice,
-        })
-      )
-        .to.emit(minter1CapsuleToken, "MintCapsule")
-        .withArgs(5, minter1.address, color);
     });
 
     it("Mint already minted color should revert", async () => {
@@ -318,9 +325,16 @@ describe("Capsules", async () => {
       const tokenIdOfColor = await capsuleToken.tokenIdOfColor(color);
 
       return expect(
-        signingContract(capsuleToken, minter1).mint(color, 400, {
-          value: mintPrice,
-        })
+        signingContract(capsuleToken, minter1).mint(
+          color,
+          {
+            weight: 400,
+            style: "normal",
+          },
+          {
+            value: mintPrice,
+          }
+        )
       ).to.be.revertedWith(`ColorAlreadyMinted(${tokenIdOfColor})`);
     });
 
@@ -343,7 +357,10 @@ describe("Capsules", async () => {
         signingContract(capsuleToken, minter2).editCapsule(
           id,
           emptyNote,
-          400,
+          {
+            weight: 400,
+            style: "normal",
+          },
           false
         )
       ).to.be.revertedWith(`NotCapsuleOwner("${owner}")`);
@@ -357,20 +374,10 @@ describe("Capsules", async () => {
       return signingContract(capsuleToken, minter1).editCapsule(
         id,
         emptyNote,
-        400,
-        false
-      );
-    });
-
-    it("Edit owned capsule with valid text should succeed, if validating text", async () => {
-      const { minter1 } = await wallets();
-
-      const id = 2;
-
-      return signingContract(capsuleToken, minter1).editCapsuleWithValidText(
-        id,
-        emptyNote,
-        400,
+        {
+          weight: 400,
+          style: "normal",
+        },
         false
       );
     });
@@ -384,25 +391,13 @@ describe("Capsules", async () => {
         signingContract(capsuleToken, minter1).editCapsule(
           id,
           emptyNote,
-          69,
+          {
+            weight: 69,
+            style: "normal",
+          },
           false
         )
-      ).to.be.revertedWith("InvalidFontWeight()");
-    });
-
-    it("Edit with invalid text should revert, if validating text", async () => {
-      const { minter1 } = await wallets();
-
-      const id = 2;
-
-      await expect(
-        signingContract(capsuleToken, minter1).editCapsuleWithValidText(
-          id,
-          textToBytes2Lines(["®"]),
-          400,
-          false
-        )
-      ).to.be.revertedWith("InvalidText()");
+      ).to.be.revertedWith("InvalidFont()");
     });
 
     it("Edit with invalid text should succeed, if not validating text", async () => {
@@ -413,7 +408,10 @@ describe("Capsules", async () => {
       await signingContract(capsuleToken, minter1).editCapsule(
         id,
         textToBytes2Lines(["®"]),
-        400,
+        {
+          weight: 400,
+          style: "normal",
+        },
         false
       );
     });
@@ -445,7 +443,10 @@ describe("Capsules", async () => {
         signingContract(capsuleToken, minter1).editCapsule(
           id,
           emptyNote,
-          400,
+          {
+            weight: 400,
+            style: "normal",
+          },
           false
         )
       ).to.be.revertedWith("CapsuleLocked()");

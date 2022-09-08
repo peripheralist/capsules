@@ -13,10 +13,12 @@ pragma solidity ^0.8.13;
 import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
+import "./ITypeface.sol";
+
 struct Capsule {
     uint256 id;
     bytes3 color;
-    uint256 fontWeight;
+    Font font;
     bytes2[16][8] text;
     bool isPure;
     bool isLocked;
@@ -46,7 +48,7 @@ interface ICapsuleToken {
 
     function isPureColor(bytes3 color) external view returns (bool);
 
-    function pureColorForFontWeight(uint256 fontWeight)
+    function pureColorForFontWeight(uint256 font)
         external
         view
         returns (bytes3 color);
@@ -62,33 +64,24 @@ interface ICapsuleToken {
         view
         returns (bytes2[16][8] memory text);
 
-    function fontWeightOf(uint256 capsuleId)
-        external
-        view
-        returns (uint256 fontWeight);
+    function fontOf(uint256 capsuleId) external view returns (Font memory font);
 
     function isLocked(uint256 capsuleId) external view returns (bool locked);
 
     function svgOf(uint256 capsuleId) external view returns (string memory);
 
-    function mint(bytes3 color, uint256 fontWeight)
+    function mint(bytes3 color, Font calldata font)
         external
         payable
         returns (uint256);
 
     function mintWithText(
         bytes3 color,
-        uint256 fontWeight,
+        Font calldata font,
         bytes2[16][8] calldata text
     ) external payable returns (uint256);
 
-    function mintWithValidText(
-        bytes3 color,
-        uint256 fontWeight,
-        bytes2[16][8] calldata text
-    ) external payable returns (uint256);
-
-    function mintPureColorForFontWeight(address to, uint256 fontWeight)
+    function mintPureColorForFont(address to, Font calldata font)
         external
         returns (uint256 capsuleId);
 
@@ -97,14 +90,7 @@ interface ICapsuleToken {
     function editCapsule(
         uint256 capsuleId,
         bytes2[16][8] calldata text,
-        uint256 fontWeight,
-        bool lock
-    ) external;
-
-    function editCapsuleWithValidText(
-        uint256 capsuleId,
-        bytes2[16][8] calldata text,
-        uint256 fontWeight,
+        Font calldata font,
         bool lock
     ) external;
 
@@ -114,10 +100,17 @@ interface ICapsuleToken {
 
     function setDefaultCapsuleRenderer(address _capsuleRenderer) external;
 
-    function isValidText(bytes2[16][8] memory text)
+    function isValidTextForRenderer(bytes2[16][8] memory text, address renderer)
         external
         view
         returns (bool);
+
+    function isValidFontForRenderer(Font memory font, address renderer)
+        external
+        view
+        returns (bool);
+
+    function isValidColor(bytes3 color) external view returns (bool);
 
     function withdraw() external;
 

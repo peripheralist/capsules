@@ -25,9 +25,21 @@ contract TestCapsuleRenderer is ICapsuleRenderer {
         return "test";
     }
 
+    function typeface() external pure returns (address) {
+        return address(0);
+    }
+
     function htmlSafeText(bytes2[16][8] memory)
         external
         pure
         returns (string[8] memory)
     {}
+
+    function isValidFont(Font memory) external pure returns (bool) {
+        return true;
+    }
+
+    function isValidText(bytes2[16][8] memory) external pure returns (bool) {
+        return true;
+    }
 }

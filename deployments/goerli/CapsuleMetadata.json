@@ -1,5 +1,5 @@
 {
-      "address": "0xEc1070f87c95848150baCa2Ffa2929f352DB393e", 
+      "address": "0x1401a1522f8609765D8a9D7E7cb40C11badcF619", 
       "abi": [
   {
     "inputs": [
@@ -16,14 +16,26 @@
             "type": "bytes3"
           },
           {
-            "internalType": "uint256",
-            "name": "fontWeight",
-            "type": "uint256"
+            "components": [
+              {
+                "internalType": "uint256",
+                "name": "weight",
+                "type": "uint256"
+              },
+              {
+                "internalType": "string",
+                "name": "style",
+                "type": "string"
+              }
+            ],
+            "internalType": "struct Font",
+            "name": "font",
+            "type": "tuple"
           },
           {
-            "internalType": "bytes4[16][8]",
+            "internalType": "bytes2[16][8]",
             "name": "text",
-            "type": "bytes4[16][8]"
+            "type": "bytes2[16][8]"
           },
           {
             "internalType": "bool",
@@ -46,7 +58,7 @@
         "type": "string"
       }
     ],
-    "name": "tokenUri",
+    "name": "metadataOf",
     "outputs": [
       {
         "internalType": "string",

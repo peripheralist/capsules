@@ -61,6 +61,12 @@ const main = async () => {
 
   console.log("");
 
+  const nonce = await deployer.getTransactionCount();
+  const expectedCapsuleTokenAddress = ethers.utils.getContractAddress({
+    from: deployer.address,
+    nonce: nonce + 3,
+  });
+
   // Deploy CapsuleMetadata
   const { contract: capsuleMetadata } = await deployCapsuleMetadata().then(
     (x) => {
@@ -72,12 +78,6 @@ const main = async () => {
       return x;
     }
   );
-
-  let nonce = await deployer.getTransactionCount();
-  const expectedCapsuleTokenAddress = ethers.utils.getContractAddress({
-    from: deployer.address,
-    nonce: nonce + 2,
-  });
 
   // Deploy CapsulesTypeface
   const { contract: capsulesTypeface } = await deployCapsulesTypeface(
@@ -104,19 +104,37 @@ const main = async () => {
   });
 
   // Deploy CapsuleToken
-  await deployCapsuleToken(
+  const { contract: capsuleToken } = await deployCapsuleToken(
     capsulesTypeface.address,
     capsuleRenderer.address,
     capsuleMetadata.address,
     ownerAddress,
     feeReceiverAddress
-  ).then((x) =>
+  ).then((x) => {
     writeFiles(
       "CapsuleToken",
       x.contract.address,
       x.args.map((a) => JSON.stringify(a))
-    )
-  );
+    );
+    return x;
+  });
+
+  if ((await capsulesTypeface.capsuleToken()) !== capsuleToken.address) {
+    console.log(
+      `🛑 CapsulesTypeface.capsuleToken() wrong address. Actual: ${await capsulesTypeface.capsuleToken()}`
+    );
+  }
+  if ((await capsuleToken.capsulesTypeface()) !== capsulesTypeface.address) {
+    console.log(`🛑 CapsuleToken.capsulesTypeface() wrong address.`);
+  }
+  if ((await capsuleToken.capsuleMetadata()) !== capsuleMetadata.address) {
+    console.log(`🛑 CapsuleToken.capsuleMetadata() wrong address.`);
+  }
+  if (
+    (await capsuleToken.defaultCapsuleRenderer()) !== capsuleRenderer.address
+  ) {
+    console.log(`🛑 CapsuleToken.defaultCapsuleRenderer() wrong address.`);
+  }
 
   console.log("Done");
 };

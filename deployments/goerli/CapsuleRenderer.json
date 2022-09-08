@@ -1,5 +1,5 @@
 {
-      "address": "0x6F3CCD8656d012a3A4b9eD64AC50F121b5fBfc0C", 
+      "address": "0xD6e2f558AF90B0a02D7A333b41f87125Ed063c0C", 
       "abi": [
   {
     "inputs": [
@@ -28,9 +28,9 @@
   {
     "inputs": [
       {
-        "internalType": "bytes4[16][8]",
+        "internalType": "bytes2[16][8]",
         "name": "text",
-        "type": "bytes4[16][8]"
+        "type": "bytes2[16][8]"
       }
     ],
     "name": "htmlSafeText",
@@ -50,6 +50,56 @@
         "components": [
           {
             "internalType": "uint256",
+            "name": "weight",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "style",
+            "type": "string"
+          }
+        ],
+        "internalType": "struct Font",
+        "name": "font",
+        "type": "tuple"
+      }
+    ],
+    "name": "isValidFont",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes2[16][8]",
+        "name": "text",
+        "type": "bytes2[16][8]"
+      }
+    ],
+    "name": "isValidText",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
             "name": "id",
             "type": "uint256"
           },
@@ -59,14 +109,26 @@
             "type": "bytes3"
           },
           {
-            "internalType": "uint256",
-            "name": "fontWeight",
-            "type": "uint256"
+            "components": [
+              {
+                "internalType": "uint256",
+                "name": "weight",
+                "type": "uint256"
+              },
+              {
+                "internalType": "string",
+                "name": "style",
+                "type": "string"
+              }
+            ],
+            "internalType": "struct Font",
+            "name": "font",
+            "type": "tuple"
           },
           {
-            "internalType": "bytes4[16][8]",
+            "internalType": "bytes2[16][8]",
             "name": "text",
-            "type": "bytes4[16][8]"
+            "type": "bytes2[16][8]"
           },
           {
             "internalType": "bool",
@@ -110,14 +172,26 @@
             "type": "bytes3"
           },
           {
-            "internalType": "uint256",
-            "name": "fontWeight",
-            "type": "uint256"
+            "components": [
+              {
+                "internalType": "uint256",
+                "name": "weight",
+                "type": "uint256"
+              },
+              {
+                "internalType": "string",
+                "name": "style",
+                "type": "string"
+              }
+            ],
+            "internalType": "struct Font",
+            "name": "font",
+            "type": "tuple"
           },
           {
-            "internalType": "bytes4[16][8]",
+            "internalType": "bytes2[16][8]",
             "name": "text",
-            "type": "bytes4[16][8]"
+            "type": "bytes2[16][8]"
           },
           {
             "internalType": "bool",
@@ -146,6 +220,19 @@
         "internalType": "string",
         "name": "base64Svg",
         "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "typeface",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
       }
     ],
     "stateMutability": "view",
