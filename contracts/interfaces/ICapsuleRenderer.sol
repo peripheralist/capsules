@@ -23,7 +23,7 @@ interface ICapsuleRenderer {
 
     function stringText(bytes4[16][8] memory)
         external
-        pure
+        view
         returns (string[8] memory);
 
     function isValidFont(Font memory font) external view returns (bool);

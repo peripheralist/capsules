@@ -27,30 +27,10 @@ contract CapsulesTypeface is Typeface {
         capsuleToken = ICapsuleToken(_capsuleToken);
     }
 
-    // /// @notice Returns true if bytes1 char is supported by CapsulesTypeface. Requires less gas than checking supported bytes2 chars.
-    // function isSupportedByte(bytes1 char) external pure returns (bool) {
-    //     // Optimize gas by first checking outer bound of byte ranges
-    //     if (char < 0x20) return false;
+    /// @notice Returns true if bytes4 char is supported by Capsules typeface.
+    function isSupportedChar(bytes4 char) external pure returns (bool) {
+        // TODO update to use utf8 encoding
 
-    //     return (char <= 0x7e ||
-    //         (char >= 0xa0 && char <= 0xa8) ||
-    //         (char >= 0xab && char <= 0xac) ||
-    //         (char >= 0xaf && char <= 0xb1) ||
-    //         char == 0xb4 ||
-    //         (char >= 0xb6 && char <= 0xb7) ||
-    //         (char >= 0xba && char <= 0xbb) ||
-    //         (char >= 0xbf && char <= 0xc4) ||
-    //         (char >= 0xc6 && char <= 0xcf) ||
-    //         (char >= 0xd1 && char <= 0xd7) ||
-    //         (char >= 0xd9 && char <= 0xdc) ||
-    //         (char >= 0xe0 && char <= 0xe4) ||
-    //         (char >= 0xe6 && char <= 0xef) ||
-    //         (char >= 0xf1 && char <= 0xfc) ||
-    //         char == 0xff);
-    // }
-
-    /// @notice Returns true if bytes2 char is supported by CapsulesTypeface. More bytes2 characters are supported than bytes1 characters, due to non-ascii characters requiring more than 1 byte to encode.
-    function isSupportedBytes4(bytes4 char) external pure returns (bool) {
         // Optimize gas by first checking outer bounds of byte ranges
         if (char < 0x00000020 || char > 0x0000e069) return false;
 
@@ -156,13 +136,7 @@ contract CapsulesTypeface is Typeface {
             char == 0x0000e069);
     }
 
-    // /// @notice No characters in the Capsules Typeface require more than 2 bytes to encode. bytes3 values should be converted to bytes2 and validated using `isSupportedBytes2()`.
-    // function isSupportedBytes3(bytes3) external pure returns (bool) {}
-
-    // /// @notice No characters in the Capsules Typeface require more than 2 bytes to encode. bytes4 values should be converted to bytes2 and validated using `isSupportedBytes2()`.
-    // function isSupportedBytes4(bytes4) external pure returns (bool) {}
-
-    /// @notice Mint pure color Capsule token to sender when sender sets fontSrc.
+    /// @notice Mint pure color Capsule token to sender when sender sets font source.
     function _afterSetSource(Font calldata font, bytes calldata)
         internal
         override(Typeface)

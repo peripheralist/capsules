@@ -17,7 +17,7 @@ import "./interfaces/ICapsuleToken.sol";
 import "./utils/Base64.sol";
 
 struct SvgSpecs {
-    // Capsule color formatted as hex color code
+    // Capsule color formatted as RGB hex color code
     bytes hexColor;
     // ID for row elements used on top and bottom edges of svg.
     bytes edgeRowId;
@@ -45,9 +45,9 @@ contract CapsuleRenderer is ICapsuleRenderer {
         return capsulesTypeface;
     }
 
-    /// @notice Return Base64-encoded SVG for Capsule
-    /// @param capsule Capsule to return SVG for
-    /// @return svg SVG for Capsule
+    /// @notice Return Base64-encoded SVG for Capsule.
+    /// @param capsule Capsule data to return SVG for.
+    /// @return svg SVG for Capsule.
     function svgOf(Capsule memory capsule)
         external
         view
@@ -57,9 +57,9 @@ contract CapsuleRenderer is ICapsuleRenderer {
     }
 
     /// @notice Return Base64-encoded SVG for Capsule. Can optionally return a square ratio image, regardless of text content shape.
-    /// @param capsule Capsule to return SVG for
-    /// @param square Fit image to square with content centered
-    /// @return base64Svg Base64-encoded SVG for Capsule
+    /// @param capsule Capsule to return SVG for.
+    /// @param square Fit image to square with content centered.
+    /// @return base64Svg Base64-encoded SVG for Capsule.
     function svgOf(Capsule memory capsule, bool square)
         public
         view
@@ -67,8 +67,8 @@ contract CapsuleRenderer is ICapsuleRenderer {
     {
         uint256 dotSize = 4;
 
-        // If text is not set, use default text
-        if (_isEmptyText(capsule.text)) {
+        // If text is empty or invalid, use default text
+        if (_isEmptyText(capsule.text) || !isValidText(capsule.text)) {
             capsule = Capsule({
                 text: _defaultTextOf(capsule.color),
                 id: capsule.id,
@@ -90,18 +90,9 @@ contract CapsuleRenderer is ICapsuleRenderer {
             // <g> row of dots 1 dot high that spans entire canvas width
             // If Capsule is locked, trim start and end dots and translate group
             bytes memory edgeRowDots;
-            edgeRowDots = abi.encodePacked('<g id="', specs.edgeRowId);
+            edgeRowDots = abi.encodePacked('<g id="', specs.edgeRowId, '">');
             if (capsule.isLocked) {
-                edgeRowDots = abi.encodePacked(
-                    edgeRowDots,
-                    'transform="translate(',
-                    Strings.toString(dotSize + 2),
-                    ')"'
-                );
-            }
-            edgeRowDots = abi.encodePacked(edgeRowDots, '">');
-            if (capsule.isLocked) {
-                for (uint256 i = 1; i < specs.textAreaWidthDots - 1; i++) {
+                for (uint256 i; i < specs.textAreaWidthDots; i++) {
                     edgeRowDots = abi.encodePacked(
                         edgeRowDots,
                         '<circle cx="',
@@ -110,7 +101,7 @@ contract CapsuleRenderer is ICapsuleRenderer {
                     );
                 }
             } else {
-                for (uint256 i; i < specs.textAreaWidthDots; i++) {
+                for (uint256 i = 1; i < specs.textAreaWidthDots - 1; i++) {
                     edgeRowDots = abi.encodePacked(
                         edgeRowDots,
                         '<circle cx="',
@@ -229,7 +220,7 @@ contract CapsuleRenderer is ICapsuleRenderer {
 
             // Add a <text> element for each line of text, excluding trailing empty lines.
             // Each <text> has its own Y position.
-            // Setting class on individual <text> elements adds css specificity and helps ensure styles are not overwritten by external stylesheets.
+            // Setting class on individual <text> elements increases CSS specificity and helps ensure styles are not overwritten by external stylesheets.
             for (uint256 i; i < specs.linesCount; i++) {
                 texts = abi.encodePacked(
                     texts,
@@ -298,7 +289,7 @@ contract CapsuleRenderer is ICapsuleRenderer {
 
     /// @notice Check if text is valid.
     /// @dev Text is valid if every bytes is supported by CapsulesTypeface, or is 0x00.
-    /// @param text Text to check validity of. 8 lines of 16 bytes3 characters in 2d array.
+    /// @param text UTF8-encoded text bytes to check validity of.
     /// @return true True if text is valid.
     function isValidText(bytes4[16][8] memory text) public view returns (bool) {
         unchecked {
@@ -310,7 +301,7 @@ contract CapsuleRenderer is ICapsuleRenderer {
 
                     // return false if any single character is unsupported
                     if (
-                        !ITypeface(capsulesTypeface).isSupportedBytes4(char) &&
+                        !ITypeface(capsulesTypeface).isSupportedChar(char) &&
                         char != bytes4(0)
                     ) {
                         return false;
@@ -319,17 +310,6 @@ contract CapsuleRenderer is ICapsuleRenderer {
             }
         }
 
-        return true;
-    }
-
-    /// @notice Check if line is empty
-    /// @dev Returns true if every byte of text is 0x00
-    /// @param line line to check if empty
-    /// @return true if line is empty
-    function _isEmptyLine(bytes4[16] memory line) internal pure returns (bool) {
-        for (uint256 i; i < 16; i++) {
-            if (line[i] != bytes4(0)) return false;
-        }
         return true;
     }
 
@@ -415,10 +395,10 @@ contract CapsuleRenderer is ICapsuleRenderer {
             });
     }
 
-    /// @notice Check if all lines of text are empty
-    /// @dev Returns true if every line of text is empty
-    /// @param text Text to check if empty
-    /// @return true if text is empty
+    /// @notice Check if all lines of text are empty.
+    /// @dev Returns true if every line of text is empty.
+    /// @param text Text to check.
+    /// @return true if text is empty.
     function _isEmptyText(bytes4[16][8] memory text)
         internal
         pure
@@ -430,9 +410,20 @@ contract CapsuleRenderer is ICapsuleRenderer {
         return true;
     }
 
-    /// @notice Returns readable string version of text.
-    /// @param text Text to convert to readable string.
-    /// @return _stringText Text string array that can be safely rendered in html.
+    /// @notice Check if line is empty.
+    /// @dev Returns true if every byte of text is 0x00.
+    /// @param line line to check.
+    /// @return true if line is empty.
+    function _isEmptyLine(bytes4[16] memory line) internal pure returns (bool) {
+        for (uint256 i; i < 16; i++) {
+            if (line[i] != bytes4(0)) return false;
+        }
+        return true;
+    }
+
+    /// @notice Returns text formatted as an array of readable strings.
+    /// @param text Text to format.
+    /// @return _stringText Text string array.
     function stringText(bytes4[16][8] memory text)
         external
         pure
@@ -443,23 +434,23 @@ contract CapsuleRenderer is ICapsuleRenderer {
         }
     }
 
-    /// @notice Check if font weight is valid.
+    /// @notice Check if font is valid Capsules typeface font.
     /// @dev A font is valid if its source has been set in the CapsulesTypeface contract.
-    /// @param font Font to check validity of.
-    /// @return true True if font weight is valid.
+    /// @param font Font to check.
+    /// @return true True if font is valid.
     function isValidFont(Font memory font) external view returns (bool) {
         return ITypeface(capsulesTypeface).hasSource(font);
     }
 
-    /// @notice Returns html-safe version of a line of text
+    /// @notice Returns text formatted as a readable string.
     /// @dev Iterates through each byte in line of text and replaces each byte as needed to create a string that will render in html without issue. Ensures that no illegal characters or 0x00 bytes remain. Non-trailing 0x00 bytes are converted to spaces, trailing 0x00 bytes are trimmed.
-    /// @param line Line of text to render safe.
+    /// @param line Line of text to format.
     /// @param htmlSafe Replace special characters with html-safe codes.
-    /// @return safeLine Text string that can be safely rendered in html.
+    /// @return stringLine Text string that can be safely rendered in html.
     function _stringLine(bytes4[16] memory line, bool htmlSafe)
         internal
         pure
-        returns (string memory safeLine)
+        returns (string memory stringLine)
     {
         // Build bytes in reverse to more easily trim trailing whitespace
         for (uint256 i = 16; i > 0; i--) {
@@ -471,19 +462,19 @@ contract CapsuleRenderer is ICapsuleRenderer {
             // Some bytes cannot render in SVG text, so we replace them with their "&"-prefixed html name code.
             if (htmlSafe && char == 0x0000003c) {
                 // Replace `<`
-                safeLine = string.concat("&lt;", safeLine);
+                stringLine = string.concat("&lt;", stringLine);
             } else if (htmlSafe && char == 0x0000003E) {
                 // Replace `>`
-                safeLine = string.concat("&gt;", safeLine);
+                stringLine = string.concat("&gt;", stringLine);
             } else if (htmlSafe && char == 0x00000026) {
                 // Replace `&`
-                safeLine = string.concat("&amp;", safeLine);
+                stringLine = string.concat("&amp;", stringLine);
             } else {
                 // If bytes4 character is html-safe, we add it while removing individual 0x0 bytes, which cannot be rendered.
                 for (uint256 j = 4; j > 0; j--) {
                     if (char[j - 1] != bytes1(0)) {
-                        safeLine = string(
-                            abi.encodePacked(char[j - 1], safeLine)
+                        stringLine = string(
+                            abi.encodePacked(char[j - 1], stringLine)
                         );
                     }
                 }

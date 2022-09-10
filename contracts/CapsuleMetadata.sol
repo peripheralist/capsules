@@ -62,9 +62,9 @@ contract CapsuleMetadata is ICapsuleMetadata {
             );
     }
 
-    /// @notice Format bytes3 type to 6 hexadecimal ascii bytes
-    /// @param b bytes3 value to convert to hex characters
-    /// @return o hex character bytes
+    /// @notice Format bytes3 type to 6 hexadecimal ascii bytes.
+    /// @param b bytes3 value to convert to hex characters.
+    /// @return o hex character bytes.
     function _bytes3ToHexChars(bytes3 b)
         internal
         pure
@@ -86,9 +86,9 @@ contract CapsuleMetadata is ICapsuleMetadata {
         o[0] = _uint8toByte(uint8(i & mask));
     }
 
-    /// @notice Convert uint8 type to ascii byte
-    /// @param i uint8 value to convert to ascii byte
-    /// @return b ascii byte
+    /// @notice Convert uint8 type to ascii byte.
+    /// @param i uint8 value to convert to ascii byte.
+    /// @return b ascii byte.
     function _uint8toByte(uint8 i) internal pure returns (bytes1 b) {
         uint8 _i = (i > 9)
             ? (i + 87) // ascii a-f

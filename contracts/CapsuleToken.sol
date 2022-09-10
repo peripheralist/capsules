@@ -7,7 +7,11 @@
 
   @notice Each Capsule token has a unique color and a custom text rendered as a SVG. The text and font for a Capsule can be updated at any time by its owner.
 
-  @dev `bytes3` type is used to store the rgb hex-encoded color that is unique to each capsule. `bytes4[16][8]` type is used to store text for Capsules: 8 lines of 16 bytes4 characters each. Because the Capsules typeface is not limited to ascii characters (1 byte), we use bytes4 to support characters that require more than 1 byte to encode.
+  @dev `bytes3` type is used to store the RGB hex-encoded color that is unique to each Capsule. 
+
+  `bytes4[16][8]` type is used to store text: 8 lines of 16 characters, where each character is utf8-encoded as a bytes4 value. Although many characters can be encoded using fewer than 4 bytes, bytes4 is used to ensure that all characters are supported.
+
+  To avoid high gas costs, text isn't validated when minting or editing. Instead, we rely on the Renderer contract to render a safe image even if the Capsule text is invalid.
  */
 
 pragma solidity 0.8.14;
@@ -31,15 +35,13 @@ import "./interfaces/ITypeface.sol";
 /*                                                                                */
 
 error ValueBelowMintPrice();
-error InvalidText();
-error InvalidFont();
+error InvalidFontForRenderer(address renderer);
 error InvalidColor();
 error PureColorNotAllowed();
 error NotCapsulesTypeface();
 error ColorAlreadyMinted(uint256 capsuleId);
 error NotCapsuleOwner(address owner);
 error CapsuleLocked();
-error CapsuleRendererLocked();
 
 contract CapsuleToken is
     ICapsuleToken,
@@ -59,19 +61,20 @@ contract CapsuleToken is
     /* -------------------------------- MODIFIERS ------------------------------- */
     /* -------------------------------------------------------------------------- */
 
-    /// @notice Require that the value sent is at least MINT_PRICE
+    /// @notice Require that the value sent is at least MINT_PRICE.
     modifier requireMintPrice() {
         if (msg.value < MINT_PRICE) revert ValueBelowMintPrice();
         _;
     }
 
-    /// @notice Require that the font weight is valid
+    /// @notice Require that the font is valid for a given renderer.
     modifier onlyValidFontForRenderer(Font memory font, address renderer) {
-        if (!isValidFontForRenderer(font, renderer)) revert InvalidFont();
+        if (!isValidFontForRenderer(font, renderer))
+            revert InvalidFontForRenderer(renderer);
         _;
     }
 
-    /// @notice Require that the color is valid and unminted
+    /// @notice Require that the color is valid and unminted.
     modifier onlyMintableColor(bytes3 color) {
         uint256 capsuleId = tokenIdOfColor[color];
         if (_exists(capsuleId)) revert ColorAlreadyMinted(capsuleId);
@@ -79,25 +82,25 @@ contract CapsuleToken is
         _;
     }
 
-    /// @notice Require that the color is not pure
+    /// @notice Require that the color is not pure.
     modifier onlyImpureColor(bytes3 color) {
         if (isPureColor(color)) revert PureColorNotAllowed();
         _;
     }
 
-    /// @notice Require that the sender is the Capsules Typeface contract
+    /// @notice Require that the sender is the CapsulesTypeface contract.
     modifier onlyCapsulesTypeface() {
         if (msg.sender != capsulesTypeface) revert NotCapsulesTypeface();
         _;
     }
 
-    /// @notice Require that the Capsule is unlocked
+    /// @notice Require that the Capsule is unlocked.
     modifier onlyUnlockedCapsule(uint256 capsuleId) {
         if (isLocked(capsuleId)) revert CapsuleLocked();
         _;
     }
 
-    /// @notice Require that the sender is the Capsule owner
+    /// @notice Require that the sender owns the Capsule.
     modifier onlyCapsuleOwner(uint256 capsuleId) {
         address owner = ownerOf(capsuleId);
         if (owner != msg.sender) revert NotCapsuleOwner(owner);
@@ -146,7 +149,7 @@ contract CapsuleToken is
     /// Price to mint a Capsule
     uint256 public constant MINT_PRICE = 1e16; // 0.01 ETH
 
-    /// Capsules typeface address
+    /// CapsulesTypeface address
     address public immutable capsulesTypeface;
 
     /// Default CapsuleRenderer address
@@ -173,7 +176,7 @@ contract CapsuleToken is
     /// Mapping of Capsule ID to color
     mapping(uint256 => bytes3) internal _colorOf;
 
-    /// Mapping of Capsule ID to font weight
+    /// Mapping of Capsule ID to font
     mapping(uint256 => Font) internal _fontOf;
 
     /// Mapping of Capsule ID to renderer address
@@ -193,9 +196,8 @@ contract CapsuleToken is
     /* -------------------------------------------------------------------------- */
 
     /// @notice Mints a Capsule to sender, saving gas by not setting text.
-    /// @dev Requires active sale, min value of `MINT_PRICE`, valid font weight, unminted & impure color.
     /// @param color Color for Capsule.
-    /// @param font FontWeight of Capsule.
+    /// @param font Font of Capsule.
     /// @return capsuleId ID of minted Capsule.
     function mint(bytes3 color, Font calldata font)
         external
@@ -209,21 +211,37 @@ contract CapsuleToken is
     }
 
     /// @notice Mint a Capsule to sender while setting its text. Saves gas by skipping text validation.
-    /// @dev Requires active sale, min value of `MINT_PRICE`, valid font weight, unminted & impure color.
     /// @param color Color for Capsule.
     /// @param font Font of Capsule.
-    /// @param text Text for Capsule. 8 lines of 16 bytes3 characters in 2d array.
+    /// @param text Text for Capsule.
     /// @return capsuleId ID of minted Capsule.
     function mintWithText(
         bytes3 color,
         Font calldata font,
         bytes4[16][8] calldata text
-    ) external payable nonReentrant returns (uint256 capsuleId) {
-        return _mintWithText(color, font, text);
+    )
+        external
+        payable
+        whenNotPaused
+        requireMintPrice
+        onlyMintableColor(color)
+        onlyImpureColor(color)
+        onlyValidFontForRenderer(font, defaultCapsuleRenderer)
+        nonReentrant
+        returns (uint256 capsuleId)
+    {
+        address to = msg.sender;
+
+        _mint(to, 1, new bytes(0), false);
+
+        capsuleId = _storeNewCapsuleData(color, font);
+
+        _textOf[capsuleId] = text;
+
+        emit MintCapsule(capsuleId, to, color);
     }
 
-    /// @notice Mint a Capsule with a pure color.
-    /// @dev Requires active sale and pure color. No option to lock Capsule.
+    /// @notice Allows the CapsulesTypeface to mint a pure color Capsule.
     /// @param to address to receive Capsule.
     /// @param font font of Capsule.
     /// @return capsuleId ID of minted Capsule.
@@ -236,7 +254,7 @@ contract CapsuleToken is
         return _mintCapsule(to, pureColorForFontWeight(font.weight), font);
     }
 
-    /// @notice Return token URI for Capsule, using the capsuleMetadata contract.
+    /// @notice Return token URI for Capsule, using the CapsuleMetadata contract.
     /// @param capsuleId ID of Capsule token.
     /// @return metadata Metadata string for Capsule.
     function tokenURI(uint256 capsuleId)
@@ -254,15 +272,15 @@ contract CapsuleToken is
             );
     }
 
-    /// @notice Return SVG image of Capsule, using that Capsule's renderer contract.
+    /// @notice Return SVG image from the Capsule's renderer.
     /// @param capsuleId ID of Capsule token.
-    /// @return svg SVG image of Capsule.
+    /// @return svg Encoded SVG image of Capsule.
     function svgOf(uint256 capsuleId) public view returns (string memory) {
         return
             ICapsuleRenderer(rendererOf(capsuleId)).svgOf(capsuleOf(capsuleId));
     }
 
-    /// @notice Returns all data for Capsule token with ID.
+    /// @notice Returns all data for Capsule token.
     /// @param capsuleId ID of Capsule.
     /// @return capsule Data for Capsule with ID.
     function capsuleOf(uint256 capsuleId) public view returns (Capsule memory) {
@@ -279,8 +297,8 @@ contract CapsuleToken is
             });
     }
 
-    /// @notice Check if color is valid for minting.
-    /// @param color Color to check validity of.
+    /// @notice Check if color is pure.
+    /// @param color Color to check.
     /// @return true True if color is pure.
     function isPureColor(bytes3 color) public view returns (bool) {
         bytes3[] memory _pureColors = pureColors;
@@ -309,7 +327,7 @@ contract CapsuleToken is
         return pureColors[(fontWeight / 100) - 1];
     }
 
-    /// @notice Returns formatted version of Capsule text that is safe to render in HTML, using the renderer for that Capsule.
+    /// @notice Returns Capsule text as readable string from the Capsule's renderer.
     /// @param capsuleId ID of Capsule.
     /// @return stringText Formatted Capsule text.
     function stringTextOf(uint256 capsuleId)
@@ -323,16 +341,16 @@ contract CapsuleToken is
             );
     }
 
-    /// @notice Returns color of Capsule token with ID.
+    /// @notice Returns color of Capsule.
     /// @param capsuleId ID of Capsule.
     /// @return color Color of Capsule as bytes3.
     function colorOf(uint256 capsuleId) public view returns (bytes3) {
         return _colorOf[capsuleId];
     }
 
-    /// @notice Returns text of Capsule token with ID.
+    /// @notice Returns text of Capsule.
     /// @param capsuleId ID of Capsule.
-    /// @return text Text of Capsule as nested bytes4 array.
+    /// @return text Text of Capsule.
     function textOf(uint256 capsuleId)
         public
         view
@@ -341,14 +359,14 @@ contract CapsuleToken is
         return _textOf[capsuleId];
     }
 
-    /// @notice Returns font of Capsule token with ID.
+    /// @notice Returns font of Capsule.
     /// @param capsuleId ID of Capsule.
     /// @return font Font of Capsule.
     function fontOf(uint256 capsuleId) public view returns (Font memory) {
         return _fontOf[capsuleId];
     }
 
-    /// @notice Returns renderer of Capsule token with ID. If no renderer is set, will return the default renderer.
+    /// @notice Returns renderer of Capsule. If Capsule has no renderer is set, the default renderer will be used.
     /// @param capsuleId ID of Capsule.
     /// @return renderer Address of renderer.
     function rendererOf(uint256 capsuleId) public view returns (address) {
@@ -358,38 +376,16 @@ contract CapsuleToken is
     }
 
     /// @notice Check if Capsule is locked.
-    /// @param capsuleId ID of Capsule
+    /// @param capsuleId ID of Capsule.
     /// @return locked True if Capsule is locked.
     function isLocked(uint256 capsuleId) public view returns (bool) {
         return _locked[capsuleId];
     }
 
-    /// @notice Withdraws balance of this contract to the feeReceiver address.
-    function withdraw() external nonReentrant {
-        uint256 balance = address(this).balance;
-
-        payable(feeReceiver).transfer(balance);
-
-        emit Withdraw(feeReceiver, balance);
-    }
-
-    /// @notice Check if text is valid.
-    /// @dev Text is valid if every bytes is supported by CapsulesTypeface, or is 0x00.
-    /// @param text Text to check validity of. 8 lines of 16 bytes3 characters in 2d array.
-    /// @param renderer Address of renderer.
-    /// @return true True if text is valid.
-    function isValidTextForRenderer(bytes4[16][8] memory text, address renderer)
-        public
-        view
-        returns (bool)
-    {
-        return ICapsuleRenderer(renderer).isValidText(text);
-    }
-
-    /// @notice Check if font weight is valid.
-    /// @param renderer Check if font is valid for this renderer.
+    /// @notice Check if font is valid for a CapsuleRenderer.
+    /// @param renderer CapsuleRenderer contract address.
     /// @param font Font to check validity of.
-    /// @return true True if font weight is valid.
+    /// @return true True if font is valid.
     function isValidFontForRenderer(Font memory font, address renderer)
         public
         view
@@ -399,8 +395,8 @@ contract CapsuleToken is
     }
 
     /// @notice Check if color is valid.
-    /// @dev A bytes3 color is valid if at least one byte == 0xFF (255), AND all byte values are evenly divisible by 5.
-    /// @param color Folor to check validity of.
+    /// @dev A color is valid if at least one byte == 0xff AND all bytes are evenly divisible by 0x05.
+    /// @param color Color to check validity of.
     /// @return true True if color is valid.
     function isValidColor(bytes3 color) public pure returns (bool) {
         // At least one byte must equal 0xff
@@ -416,6 +412,15 @@ contract CapsuleToken is
         }
 
         return true;
+    }
+
+    /// @notice Withdraws balance of this contract to the feeReceiver address.
+    function withdraw() external nonReentrant {
+        uint256 balance = address(this).balance;
+
+        payable(feeReceiver).transfer(balance);
+
+        emit Withdraw(feeReceiver, balance);
     }
 
     /// @notice EIP2981 royalty standard
@@ -437,7 +442,6 @@ contract CapsuleToken is
         override(IERC165, ERC721A)
         returns (bool)
     {
-        // TODO verify correct
         return
             interfaceId == type(IERC2981).interfaceId ||
             super.supportsInterface(interfaceId);
@@ -456,10 +460,11 @@ contract CapsuleToken is
     /* ------------------------ CAPSULE OWNER FUNCTIONS ------------------------- */
     /* -------------------------------------------------------------------------- */
 
-    /// @notice Allows the owner of the Capsule to update the Capsule text, font, and locked state.
+    /// @notice Allows Capsule owner to edit the Capsule text, font, and locked state.
     /// @param capsuleId ID of Capsule.
-    /// @param text New text for Capsule. 8 lines of 16 bytes3 characters in 2d array.
-    /// @param font New font weight for Capsule.
+    /// @param text New text for Capsule.
+    /// @param font New font for Capsule.
+    /// @param lock Lock capsule, preventing any future edits.
     function editCapsule(
         uint256 capsuleId,
         bytes4[16][8] calldata text,
@@ -469,15 +474,15 @@ contract CapsuleToken is
         _editCapsule(capsuleId, text, font, lock);
     }
 
-    /// @notice Allows Capsule owner to lock a Capsule, permanently preventing it from being edited.
+    /// @notice Allows Capsule owner to lock a Capsule, preventing any future edits.
     /// @param capsuleId ID of Capsule to lock.
     function lockCapsule(uint256 capsuleId) external {
         _lockCapsule(capsuleId);
     }
 
-    /// @notice Allows the owner of a Capsule to set its renderer contract. If renderer is the zero address, the Capsule will use the default renderer.
-    /// @dev Does not check validity of the Capsule text or font for the new renderer.
-    /// @param capsuleId ID of Capsule to set renderer for.
+    /// @notice Allows Capsule owner to set its renderer contract. If renderer is the zero address, the Capsule will use the default renderer.
+    /// @dev Does not check validity of the current Capsule text or font with the new renderer.
+    /// @param capsuleId ID of Capsule.
     /// @param renderer Address of new renderer.
     function setRendererOf(uint256 capsuleId, address renderer)
         external
@@ -488,8 +493,8 @@ contract CapsuleToken is
         emit SetRendererOf(capsuleId, renderer);
     }
 
-    /// @notice Burns a Capsule token.
-    /// @param capsuleId ID of Capsule token to burn.
+    /// @notice Burns a Capsule.
+    /// @param capsuleId ID of Capsule to burn.
     function burn(uint256 capsuleId) external onlyCapsuleOwner(capsuleId) {
         _burn(capsuleId);
     }
@@ -520,22 +525,22 @@ contract CapsuleToken is
         emit SetCapsuleMetadata(_capsuleMetadata);
     }
 
-    /// @notice Allows the owner of this contract to update feeReceiver.
-    /// @param _feeReceiver Address of new feeReceiver.
-    function setFeeReceiver(address _feeReceiver) external onlyOwner {
-        feeReceiver = _feeReceiver;
+    /// @notice Allows the owner of this contract to update the feeReceiver address.
+    /// @param newFeeReceiver Address of new feeReceiver.
+    function setFeeReceiver(address newFeeReceiver) external onlyOwner {
+        feeReceiver = newFeeReceiver;
 
-        emit SetFeeReceiver(_feeReceiver);
+        emit SetFeeReceiver(newFeeReceiver);
     }
 
     /// @notice Allows the owner of this contract to update the royalty amount.
-    /// @param _royalty New royalty amount.
-    function setRoyalty(uint256 _royalty) external onlyOwner {
-        require(_royalty <= 1000, "Amount too high");
+    /// @param royaltyAmount New royalty amount.
+    function setRoyalty(uint256 royaltyAmount) external onlyOwner {
+        require(royaltyAmount <= 1000, "Amount too high");
 
-        royalty = _royalty;
+        royalty = royaltyAmount;
 
-        emit SetRoyalty(_royalty);
+        emit SetRoyalty(royaltyAmount);
     }
 
     /// @notice Allows the contract owner to pause the contract.
@@ -566,10 +571,9 @@ contract CapsuleToken is
     }
 
     /// @notice Mints a Capsule.
-    /// @dev Stores Capsule data in `_capsuleOf`, and mapping `tokenIdOfColor`.
     /// @param to Address to receive capsule.
     /// @param color Color of Capsule.
-    /// @param font FontWeight of Capsule.
+    /// @param font Font of Capsule.
     /// @return capsuleId ID of minted Capsule.
     function _mintCapsule(
         address to,
@@ -585,30 +589,6 @@ contract CapsuleToken is
         _mint(to, 1, new bytes(0), false);
 
         capsuleId = _storeNewCapsuleData(color, font);
-
-        emit MintCapsule(capsuleId, to, color);
-    }
-
-    function _mintWithText(
-        bytes3 color,
-        Font calldata font,
-        bytes4[16][8] calldata text
-    )
-        internal
-        whenNotPaused
-        requireMintPrice
-        onlyMintableColor(color)
-        onlyImpureColor(color)
-        onlyValidFontForRenderer(font, defaultCapsuleRenderer)
-        returns (uint256 capsuleId)
-    {
-        address to = msg.sender;
-
-        _mint(to, 1, new bytes(0), false);
-
-        capsuleId = _storeNewCapsuleData(color, font);
-
-        _textOf[capsuleId] = text;
 
         emit MintCapsule(capsuleId, to, color);
     }
@@ -640,6 +620,31 @@ contract CapsuleToken is
         _locked[capsuleId] = true;
 
         emit LockCapsule(capsuleId);
+    }
+
+    /// @notice Check if all lines of text are empty.
+    /// @param text Text to check.
+    /// @return true if text is empty.
+    function _isEmptyText(bytes4[16][8] memory text)
+        internal
+        pure
+        returns (bool)
+    {
+        for (uint256 i; i < 8; i++) {
+            if (!_isEmptyLine(text[i])) return false;
+        }
+        return true;
+    }
+
+    /// @notice Check if line is empty.
+    /// @dev Returns true if every byte of text is 0x00.
+    /// @param line line to check.
+    /// @return true if line is empty.
+    function _isEmptyLine(bytes4[16] memory line) internal pure returns (bool) {
+        for (uint256 i; i < 16; i++) {
+            if (line[i] != bytes4(0)) return false;
+        }
+        return true;
     }
 
     function _storeNewCapsuleData(bytes3 color, Font memory font)

@@ -28,11 +28,11 @@ interface ITypeface {
     /// @notice Returns the typeface name.
     function name() external view returns (string memory);
 
-    /// @notice Return true if bytes4 character is supported by font.
-    /// @dev bytes4 supports all possible utf-8 encoded characters.
-    /// @param char 4-byte character to check if allowed.
-    /// @return true True if allowed.
-    function isSupportedBytes4(bytes4 char) external view returns (bool);
+    /// @notice Check if typeface includes a glyph for a specific character code point.
+    /// @dev 3 bytes supports the entirety of the Basic Multilingual Plane (BMP) of unicodes.
+    /// @param codePoint Character code point.
+    /// @return true True if supported.
+    function supportsCodePoint(bytes3 codePoint) external view returns (bool);
 
     /// @notice Return source data of Font.
     /// @param font Font to return source data for.
@@ -48,4 +48,20 @@ interface ITypeface {
     /// @param font Font to store source data for.
     /// @param source Source data of font.
     function setSource(Font memory font, bytes memory source) external;
+}
+
+interface IASCIITypeface is ITypeface {
+    /// @notice Check if typeface includes a glyph for a specific character code point.
+    /// @dev 1 byte supports all ASCII unicodes.
+    /// @param codePoint Character code point.
+    /// @return true True if supported.
+    function supportsCodePoint(bytes1 codePoint) external view returns (bool);
+}
+
+interface IBMPTypeface is ITypeface {
+    /// @notice Check if typeface includes a glyph for a specific character code point.
+    /// @dev 2 bytes supports the entirety of the Basic Multilingual Plane (BMP) of unicodes.
+    /// @param codePoint Character code point.
+    /// @return true True if supported.
+    function supportsCodePoint(bytes2 codePoint) external view returns (bool);
 }

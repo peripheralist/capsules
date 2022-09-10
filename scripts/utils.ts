@@ -5,7 +5,7 @@ import * as fs from "fs";
 import { ethers } from "hardhat";
 
 import { FONTS } from "../fonts";
-import { reservedColors } from "../reservedColors";
+import { pureColors } from "../pureColors";
 import {
   CapsuleMetadata,
   CapsuleRenderer,
@@ -81,7 +81,7 @@ export async function mintValidUnlockedCapsules(
   const skip = (await capsules.totalSupply()).toNumber();
 
   const validHexes = hexes
-    .filter((h) => !reservedColors.includes(h))
+    .filter((h) => !pureColors.includes(h))
     .slice(skip);
 
   const _count =
@@ -159,7 +159,7 @@ export async function deployCapsuleToken(
     capsuleRendererAddress,
     capsuleMetadataAddress,
     feeReceiverAddress,
-    reservedColors,
+    pureColors,
     royalty,
   ];
 

@@ -2,7 +2,7 @@ import { expect } from "chai";
 import { utils } from "ethers";
 
 import { FONTS } from "../fonts";
-import { reservedColors } from "../reservedColors";
+import { pureColors } from "../pureColors";
 import {
   CapsuleRenderer,
   CapsuleMetadata,
@@ -107,6 +107,25 @@ describe("Capsules", async () => {
       ).to.be.revertedWith("Pausable: paused");
     });
 
+    it("Mint should revert while paused", async () => {
+      const { minter1 } = await wallets();
+
+      const minter1CapsuleToken = signingContract(capsuleToken, minter1);
+
+      return expect(
+        minter1CapsuleToken.mint(
+          "0x0005ff",
+          {
+            weight: 400,
+            style: "normal",
+          },
+          {
+            value: mintPrice,
+          }
+        )
+      ).to.be.revertedWith("Pausable: paused");
+    });
+
     it("Should unpause", async () => {
       const { owner } = await wallets();
       const ownerCapsules = signingContract(capsuleToken, owner);
@@ -154,7 +173,7 @@ describe("Capsules", async () => {
       );
       await expect(tx)
         .to.emit(capsuleToken, "MintCapsule")
-        .withArgs(1, owner.address, reservedColors[3]);
+        .withArgs(1, owner.address, pureColors[3]);
       await expect(tx)
         .to.emit(capsulesTypeface, "SetSource")
         .withArgs([400, "normal"]);
@@ -184,7 +203,7 @@ describe("Capsules", async () => {
   });
 
   describe("Minting", async () => {
-    it("Mint with unset font weight should revert", async () => {
+    it("Mint with invalid font weight should revert", async () => {
       const { minter1 } = await wallets();
 
       return expect(
@@ -198,7 +217,28 @@ describe("Capsules", async () => {
             value: mintPrice,
           }
         )
-      ).to.be.revertedWith("InvalidFont()");
+      ).to.be.revertedWith(
+        `InvalidFontForRenderer("${capsuleRenderer.address}")`
+      );
+    });
+
+    it("Mint with invalid font style should revert", async () => {
+      const { minter1 } = await wallets();
+
+      return expect(
+        signingContract(capsuleToken, minter1).mint(
+          "0x0005ff",
+          {
+            weight: 400,
+            style: "asdf",
+          },
+          {
+            value: mintPrice,
+          }
+        )
+      ).to.be.revertedWith(
+        `InvalidFontForRenderer("${capsuleRenderer.address}")`
+      );
     });
 
     it("Mint with invalid color should revert", async () => {
@@ -218,7 +258,7 @@ describe("Capsules", async () => {
       ).to.be.revertedWith("InvalidColor()");
     });
 
-    it("Mint with invalid text should succeed, if not validating text", async () => {
+    it("Mint with invalid text should succeed", async () => {
       const { minter1 } = await wallets();
 
       await signingContract(capsuleToken, minter1).mintWithText(
@@ -291,7 +331,7 @@ describe("Capsules", async () => {
         .withArgs(3, minter1.address, color);
     });
 
-    it("Mint with valid color and text should succeed, if not validating text", async () => {
+    it("Mint with valid color and text should succeed", async () => {
       const { minter1 } = await wallets();
 
       const minter1CapsuleToken = signingContract(capsuleToken, minter1);
@@ -397,10 +437,32 @@ describe("Capsules", async () => {
           },
           false
         )
-      ).to.be.revertedWith("InvalidFont()");
+      ).to.be.revertedWith(
+        `InvalidFontForRenderer("${capsuleRenderer.address}")`
+      );
     });
 
-    it("Edit with invalid text should succeed, if not validating text", async () => {
+    it("Edit with invalid font style should revert", async () => {
+      const { minter1 } = await wallets();
+
+      const id = 2;
+
+      return expect(
+        signingContract(capsuleToken, minter1).editCapsule(
+          id,
+          emptyNote,
+          {
+            weight: 400,
+            style: "asdf",
+          },
+          false
+        )
+      ).to.be.revertedWith(
+        `InvalidFontForRenderer("${capsuleRenderer.address}")`
+      );
+    });
+
+    it("Edit with invalid text should succeed", async () => {
       const { minter1 } = await wallets();
 
       const id = 2;
@@ -452,7 +514,7 @@ describe("Capsules", async () => {
       ).to.be.revertedWith("CapsuleLocked()");
     });
 
-    it("Set renderer should succeed", async () => {
+    it("Set renderer should succeed and Capsule should return SVG from new renderer", async () => {
       const { minter1 } = await wallets();
 
       const id = 2;
@@ -465,10 +527,12 @@ describe("Capsules", async () => {
 
       const minter1CapsuleToken = signingContract(capsuleToken, minter1);
 
+      // Ensure Capsule is using default renderer
       await expect(await minter1CapsuleToken.rendererOf(id)).to.equal(
         await minter1CapsuleToken.defaultCapsuleRenderer()
       );
 
+      // Set new renderer
       await expect(
         minter1CapsuleToken.setRendererOf(id, testCapsuleRenderer.address)
       )
@@ -479,7 +543,13 @@ describe("Capsules", async () => {
         testCapsuleRenderer.address
       );
 
-      await expect(await minter1CapsuleToken.svgOf(id)).to.equal("test");
+      // Ensure CapsuleToken svgOf is using new renderer
+      const svgFromCapsuleToken = await minter1CapsuleToken.svgOf(id);
+      const capsule = await minter1CapsuleToken.capsuleOf(1);
+      const svgFromTestRenderer = await testCapsuleRenderer[
+        "svgOf((uint256,bytes3,(uint256,string),bytes4[16][8],bool,bool))"
+      ](capsule);
+      await expect(svgFromCapsuleToken).to.equal(svgFromTestRenderer);
     });
   });
 
@@ -506,6 +576,138 @@ describe("Capsules", async () => {
       expect(
         await feeReceiver.provider?.getBalance(capsuleToken.address)
       ).to.equal(0);
+    });
+
+    it("Set default renderer as non-owner should revert", async () => {
+      const { minter1 } = await wallets();
+
+      const minter1CapsuleToken = signingContract(capsuleToken, minter1);
+
+      return expect(
+        minter1CapsuleToken.setDefaultCapsuleRenderer(minter1.address)
+      ).to.be.revertedWith("Ownable: caller is not the owner");
+    });
+
+    it("Set default renderer as owner should succeed", async () => {
+      const { owner } = await wallets();
+
+      const ownerCapsuleToken = signingContract(capsuleToken, owner);
+
+      const newRendererAddress = owner.address;
+
+      await expect(
+        ownerCapsuleToken.setDefaultCapsuleRenderer(newRendererAddress)
+      )
+        .to.emit(capsuleToken, "SetDefaultCapsuleRenderer")
+        .withArgs(newRendererAddress);
+
+      expect(await ownerCapsuleToken.defaultCapsuleRenderer()).to.equal(
+        newRendererAddress
+      );
+    });
+
+    it("Set metadata address as non-owner should revert", async () => {
+      const { minter1 } = await wallets();
+
+      const minter1CapsuleToken = signingContract(capsuleToken, minter1);
+
+      return expect(
+        minter1CapsuleToken.setCapsuleMetadata(minter1.address)
+      ).to.be.revertedWith("Ownable: caller is not the owner");
+    });
+
+    it("Set metadata address as owner should succeed", async () => {
+      const { owner } = await wallets();
+
+      const ownerCapsuleToken = signingContract(capsuleToken, owner);
+
+      const newMetadataAddress = owner.address;
+
+      expect(await ownerCapsuleToken.setCapsuleMetadata(newMetadataAddress))
+        .to.emit(capsuleToken, "SetCapsuleMetadata")
+        .withArgs(newMetadataAddress);
+
+      expect(await ownerCapsuleToken.capsuleMetadata()).to.equal(
+        newMetadataAddress
+      );
+    });
+
+    it("Set feeReceiver as non-owner should revert", async () => {
+      const { minter1 } = await wallets();
+
+      const minter1CapsuleToken = signingContract(capsuleToken, minter1);
+
+      return expect(
+        minter1CapsuleToken.setFeeReceiver(minter1.address)
+      ).to.be.revertedWith("Ownable: caller is not the owner");
+    });
+
+    it("Set feeReceiver as owner should succeed", async () => {
+      const { owner } = await wallets();
+
+      const ownerCapsuleToken = signingContract(capsuleToken, owner);
+
+      const newFeeReceiver = owner.address;
+
+      await expect(ownerCapsuleToken.setFeeReceiver(newFeeReceiver))
+        .to.emit(capsuleToken, "SetFeeReceiver")
+        .withArgs(newFeeReceiver);
+
+      return expect(await ownerCapsuleToken.feeReceiver()).to.equal(
+        newFeeReceiver
+      );
+    });
+
+    it("Set royalty as non-owner should revert", async () => {
+      const { minter1 } = await wallets();
+
+      const minter1CapsuleToken = signingContract(capsuleToken, minter1);
+
+      return expect(minter1CapsuleToken.setRoyalty(50)).to.be.revertedWith(
+        "Ownable: caller is not the owner"
+      );
+    });
+
+    it("Set too high royalty as owner should revert", async () => {
+      const { owner } = await wallets();
+
+      const ownerCapsuleToken = signingContract(capsuleToken, owner);
+
+      return expect(ownerCapsuleToken.setRoyalty(100000)).to.be.revertedWith(
+        "Amount too high"
+      );
+    });
+
+    it("Set valid royalty should succeed", async () => {
+      const { owner } = await wallets();
+
+      const ownerCapsuleToken = signingContract(capsuleToken, owner);
+
+      const newRoyalty = 69;
+
+      await expect(ownerCapsuleToken.setRoyalty(newRoyalty))
+        .to.emit(capsuleToken, "SetRoyalty")
+        .withArgs(newRoyalty);
+
+      return expect(await ownerCapsuleToken.royalty()).to.equal(newRoyalty);
+    });
+
+    it("Pause as non-owner should revert", async () => {
+      const { minter1 } = await wallets();
+
+      const minter1CapsuleToken = signingContract(capsuleToken, minter1);
+
+      return expect(minter1CapsuleToken.pause()).to.be.revertedWith(
+        "Ownable: caller is not the owner"
+      );
+    });
+
+    it("Pause as owner should succeed", async () => {
+      const { owner } = await wallets();
+
+      const ownerCapsuleToken = signingContract(capsuleToken, owner);
+
+      return expect(ownerCapsuleToken.pause()).to.emit(capsuleToken, "Paused");
     });
   });
 });

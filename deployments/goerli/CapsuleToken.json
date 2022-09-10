@@ -1,5 +1,5 @@
 {
-      "address": "0xE3aB864f6e278509203A1f76f18AfF7ec658Fd15", 
+      "address": "0x700835e9403260f7F603c0C90cf7CEa01258db7F", 
       "abi": [
   {
     "inputs": [
@@ -84,8 +84,14 @@
     "type": "error"
   },
   {
-    "inputs": [],
-    "name": "InvalidFont",
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "renderer",
+        "type": "address"
+      }
+    ],
+    "name": "InvalidFontForRenderer",
     "type": "error"
   },
   {
@@ -836,30 +842,6 @@
   {
     "inputs": [
       {
-        "internalType": "bytes4[16][8]",
-        "name": "text",
-        "type": "bytes4[16][8]"
-      },
-      {
-        "internalType": "address",
-        "name": "renderer",
-        "type": "address"
-      }
-    ],
-    "name": "isValidTextForRenderer",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "uint256",
         "name": "capsuleId",
         "type": "uint256"
@@ -1253,7 +1235,7 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_feeReceiver",
+        "name": "newFeeReceiver",
         "type": "address"
       }
     ],
@@ -1284,7 +1266,7 @@
     "inputs": [
       {
         "internalType": "uint256",
-        "name": "_royalty",
+        "name": "royaltyAmount",
         "type": "uint256"
       }
     ],

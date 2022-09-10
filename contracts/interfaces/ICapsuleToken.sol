@@ -100,11 +100,6 @@ interface ICapsuleToken {
 
     function setDefaultCapsuleRenderer(address _capsuleRenderer) external;
 
-    function isValidTextForRenderer(bytes4[16][8] memory text, address renderer)
-        external
-        view
-        returns (bool);
-
     function isValidFontForRenderer(Font memory font, address renderer)
         external
         view
