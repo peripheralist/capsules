@@ -9,12 +9,12 @@
 
   @dev `bytes3` type is used to store the RGB hex-encoded color that is unique to each Capsule. 
 
-  `bytes2[16][8]` type is used to store text: 8 lines of 16 characters, where each character is utf8-encoded as a bytes4 value. Although many characters can be encoded using fewer than 4 bytes, bytes4 is used to ensure that all characters are supported.
+  `bytes32[8]` type is used to store text: 8 lines of 16 characters, where each character is utf8-encoded as a bytes4 value. Although many characters can be encoded using fewer than 4 bytes, bytes4 is used to ensure that all characters are supported.
 
   To avoid high gas costs, text isn't validated when minting or editing. Instead, we rely on the Renderer contract to render a safe image even if the Capsule text is invalid.
  */
 
-// TODO store bytes2[16][8] as bytes32[8]?
+// TODO store bytes32[8] as bytes32[8]?
 
 pragma solidity 0.8.14;
 
@@ -135,12 +135,14 @@ contract CapsuleToken is
         uint256 _royalty
     ) ERC721A("Capsules", "CAPS") {
         capsulesTypeface = _capsulesTypeface;
-        defaultRenderer = _defaultRenderer;
-        capsuleMetadata = _capsuleMetadata;
-        feeReceiver = _feeReceiver;
+
+        _setDefaultRenderer(_defaultRenderer);
+        _setCapsuleMetadata(_capsuleMetadata);
+        _setFeeReceiver(_feeReceiver);
+        _setRoyalty(_royalty);
+
         pureColors = _pureColors;
         emit SetPureColors(_pureColors);
-        royalty = _royalty;
 
         _pause();
     }
@@ -183,7 +185,7 @@ contract CapsuleToken is
     mapping(address => bool) internal _validRenderers;
 
     /// Mapping of Capsule ID to text
-    mapping(uint256 => bytes2[16][8]) internal _textOf;
+    mapping(uint256 => bytes32[8]) internal _textOf;
 
     /// Mapping of Capsule ID to color
     mapping(uint256 => bytes3) internal _colorOf;
@@ -230,7 +232,7 @@ contract CapsuleToken is
     function mintWithText(
         bytes3 color,
         Font calldata font,
-        bytes2[16][8] calldata text
+        bytes32[8] calldata text
     )
         external
         payable
@@ -363,11 +365,7 @@ contract CapsuleToken is
     /// @notice Returns text of Capsule.
     /// @param capsuleId ID of Capsule.
     /// @return text Text of Capsule.
-    function textOf(uint256 capsuleId)
-        public
-        view
-        returns (bytes2[16][8] memory)
-    {
+    function textOf(uint256 capsuleId) public view returns (bytes32[8] memory) {
         return _textOf[capsuleId];
     }
 
@@ -501,7 +499,7 @@ contract CapsuleToken is
     /// @param lock Lock capsule, preventing any future edits.
     function editCapsule(
         uint256 capsuleId,
-        bytes2[16][8] calldata text,
+        bytes32[8] calldata text,
         Font calldata font,
         bool lock
     ) public {
@@ -547,37 +545,25 @@ contract CapsuleToken is
     /// @notice Allows the owner of this contract to update the defaultCapsuleRenderer contract.
     /// @param renderer Address of new default defaultCapsuleRenderer contract.
     function setDefaultRenderer(address renderer) external onlyOwner {
-        defaultRenderer = renderer;
-
-        _validRenderers[renderer] = true;
-
-        emit SetDefaultRenderer(renderer);
+        _setDefaultRenderer(renderer);
     }
 
     /// @notice Allows the owner of this contract to update the CapsuleMetadata contract.
     /// @param _capsuleMetadata Address of new default CapsuleMetadata contract.
     function setCapsuleMetadata(address _capsuleMetadata) external onlyOwner {
-        capsuleMetadata = _capsuleMetadata;
-
-        emit SetCapsuleMetadata(_capsuleMetadata);
+        _setCapsuleMetadata(_capsuleMetadata);
     }
 
     /// @notice Allows the owner of this contract to update the feeReceiver address.
     /// @param newFeeReceiver Address of new feeReceiver.
     function setFeeReceiver(address newFeeReceiver) external onlyOwner {
-        feeReceiver = newFeeReceiver;
-
-        emit SetFeeReceiver(newFeeReceiver);
+        _setFeeReceiver(newFeeReceiver);
     }
 
     /// @notice Allows the owner of this contract to update the royalty amount.
     /// @param royaltyAmount New royalty amount.
     function setRoyalty(uint256 royaltyAmount) external onlyOwner {
-        require(royaltyAmount <= 1000, "Amount too high");
-
-        royalty = royaltyAmount;
-
-        emit SetRoyalty(royaltyAmount);
+        _setRoyalty(royaltyAmount);
     }
 
     /// @notice Allows the contract owner to pause the contract.
@@ -632,7 +618,7 @@ contract CapsuleToken is
 
     function _editCapsule(
         uint256 capsuleId,
-        bytes2[16][8] calldata text,
+        bytes32[8] calldata text,
         Font calldata font,
         bool lock
     )
@@ -662,11 +648,7 @@ contract CapsuleToken is
     /// @notice Check if all lines of text are empty.
     /// @param text Text to check.
     /// @return true if text is empty.
-    function _isEmptyText(bytes2[16][8] memory text)
-        internal
-        pure
-        returns (bool)
-    {
+    function _isEmptyText(bytes32[8] memory text) internal pure returns (bool) {
         for (uint256 i; i < 8; i++) {
             if (!_isEmptyLine(text[i])) return false;
         }
@@ -677,11 +659,53 @@ contract CapsuleToken is
     /// @dev Returns true if every byte of text is 0x00.
     /// @param line line to check.
     /// @return true if line is empty.
-    function _isEmptyLine(bytes2[16] memory line) internal pure returns (bool) {
+    function _isEmptyLine(bytes32 line) internal pure returns (bool) {
+        bytes2[16] memory _line = _bytes32ToBytes2Array(line);
         for (uint256 i; i < 16; i++) {
-            if (line[i] != 0) return false;
+            if (_line[i] != 0) return false;
         }
         return true;
+    }
+
+    /// @notice Format bytes32 type as array of bytes2
+    /// @param b bytes32 value to convert to array
+    /// @return a Array of bytes2
+    function _bytes32ToBytes2Array(bytes32 b)
+        internal
+        pure
+        returns (bytes2[16] memory a)
+    {
+        for (uint256 i; i < 16; i++) {
+            a[i] = bytes2(abi.encodePacked(b[i * 2], b[i * 2 + 1]));
+        }
+    }
+
+    function _setDefaultRenderer(address renderer) internal {
+        defaultRenderer = renderer;
+
+        _validRenderers[renderer] = true;
+
+        emit SetDefaultRenderer(renderer);
+    }
+
+    function _setRoyalty(uint256 royaltyAmount) internal {
+        require(royaltyAmount <= 1000, "Amount too high");
+
+        royalty = royaltyAmount;
+
+        emit SetRoyalty(royaltyAmount);
+    }
+
+    function _setFeeReceiver(address newFeeReceiver) internal {
+        feeReceiver = newFeeReceiver;
+
+        emit SetFeeReceiver(newFeeReceiver);
+    }
+
+    function _setCapsuleMetadata(address _capsuleMetadata) internal {
+        capsuleMetadata = _capsuleMetadata;
+
+        emit SetCapsuleMetadata(_capsuleMetadata);
     }
 
     function _storeNewCapsuleData(bytes3 color, Font memory font)

@@ -1,5 +1,5 @@
 {
-      "address": "0xD3dBeAB564C304287f959CE35E023deE804d2466", 
+      "address": "0xcC23fb5126B5977b301e4c79792CF19AE3D6B592", 
       "abi": [
   {
     "inputs": [
@@ -59,9 +59,9 @@
   {
     "inputs": [
       {
-        "internalType": "bytes2[16][8]",
+        "internalType": "bytes32[8]",
         "name": "text",
-        "type": "bytes2[16][8]"
+        "type": "bytes32[8]"
       }
     ],
     "name": "isValidText",
@@ -78,9 +78,9 @@
   {
     "inputs": [
       {
-        "internalType": "bytes2[16][8]",
+        "internalType": "bytes32[8]",
         "name": "text",
-        "type": "bytes2[16][8]"
+        "type": "bytes32[8]"
       }
     ],
     "name": "stringText",
@@ -126,9 +126,9 @@
             "type": "tuple"
           },
           {
-            "internalType": "bytes2[16][8]",
+            "internalType": "bytes32[8]",
             "name": "text",
-            "type": "bytes2[16][8]"
+            "type": "bytes32[8]"
           },
           {
             "internalType": "bool",
@@ -189,9 +189,9 @@
             "type": "tuple"
           },
           {
-            "internalType": "bytes2[16][8]",
+            "internalType": "bytes32[8]",
             "name": "text",
-            "type": "bytes2[16][8]"
+            "type": "bytes32[8]"
           },
           {
             "internalType": "bool",

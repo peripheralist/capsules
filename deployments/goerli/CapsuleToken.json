@@ -1,5 +1,5 @@
 {
-      "address": "0xD43b6896C3d2b8f941A2616c8bdf10b648738818", 
+      "address": "0xD7b07EdccF4cE3DE08a0a5508221A95D2dbfc31F", 
       "abi": [
   {
     "inputs": [
@@ -10,7 +10,7 @@
       },
       {
         "internalType": "address",
-        "name": "_defaultCapsuleRenderer",
+        "name": "_defaultRenderer",
         "type": "address"
       },
       {
@@ -92,6 +92,11 @@
       }
     ],
     "name": "InvalidFontForRenderer",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "InvalidRenderer",
     "type": "error"
   },
   {
@@ -317,7 +322,7 @@
         "type": "address"
       }
     ],
-    "name": "SetDefaultCapsuleRenderer",
+    "name": "SetDefaultRenderer",
     "type": "event"
   },
   {
@@ -551,9 +556,9 @@
             "type": "tuple"
           },
           {
-            "internalType": "bytes2[16][8]",
+            "internalType": "bytes32[8]",
             "name": "text",
-            "type": "bytes2[16][8]"
+            "type": "bytes32[8]"
           },
           {
             "internalType": "bool",
@@ -569,25 +574,6 @@
         "internalType": "struct Capsule",
         "name": "",
         "type": "tuple"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "capsuleId",
-        "type": "uint256"
-      }
-    ],
-    "name": "capsuleTextIsValid",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
       }
     ],
     "stateMutability": "view",
@@ -627,7 +613,7 @@
   },
   {
     "inputs": [],
-    "name": "defaultCapsuleRenderer",
+    "name": "defaultRenderer",
     "outputs": [
       {
         "internalType": "address",
@@ -646,9 +632,9 @@
         "type": "uint256"
       },
       {
-        "internalType": "bytes2[16][8]",
+        "internalType": "bytes32[8]",
         "name": "text",
-        "type": "bytes2[16][8]"
+        "type": "bytes32[8]"
       },
       {
         "components": [
@@ -806,6 +792,25 @@
   {
     "inputs": [
       {
+        "internalType": "uint256",
+        "name": "capsuleId",
+        "type": "uint256"
+      }
+    ],
+    "name": "isValidCapsuleText",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
         "internalType": "bytes3",
         "name": "color",
         "type": "bytes3"
@@ -848,6 +853,25 @@
       }
     ],
     "name": "isValidFontForRenderer",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "renderer",
+        "type": "address"
+      }
+    ],
+    "name": "isValidRenderer",
     "outputs": [
       {
         "internalType": "bool",
@@ -968,9 +992,9 @@
         "type": "tuple"
       },
       {
-        "internalType": "bytes2[16][8]",
+        "internalType": "bytes32[8]",
         "name": "text",
-        "type": "bytes2[16][8]"
+        "type": "bytes32[8]"
       }
     ],
     "name": "mintWithText",
@@ -1245,7 +1269,7 @@
         "type": "address"
       }
     ],
-    "name": "setDefaultCapsuleRenderer",
+    "name": "setDefaultRenderer",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -1375,9 +1399,9 @@
     "name": "textOf",
     "outputs": [
       {
-        "internalType": "bytes2[16][8]",
+        "internalType": "bytes32[8]",
         "name": "",
-        "type": "bytes2[16][8]"
+        "type": "bytes32[8]"
       }
     ],
     "stateMutability": "view",

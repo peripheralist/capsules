@@ -291,16 +291,17 @@ contract CapsuleRenderer is ICapsuleRenderer {
     /// @dev Text is valid if every bytes is supported by CapsulesTypeface, or is 0x00.
     /// @param text UTF8-encoded text bytes to check validity of.
     /// @return true True if text is valid.
-    function isValidText(bytes2[16][8] memory text) public view returns (bool) {
+    function isValidText(bytes32[8] memory text) public view returns (bool) {
         unchecked {
             for (uint256 i; i < 8; i++) {
+                bytes2[16] memory line = _bytes32ToBytes2Array(text[i]);
                 for (uint256 j; j < 16; j++) {
-                    bytes2 char = text[i][j];
+                    bytes2 char = line[j];
 
                     // return false if any single character is unsupported
                     if (
                         !ITypeface(capsulesTypeface).supportsCodePoint(
-                            // we can't directly convert bytes2 to bytes3 because 0 byte padding would be added to the right instead of the left
+                            // convert to bytes3 by adding 0x00 padding to left side
                             bytes3(abi.encodePacked(bytes1(0), char))
                         ) && char != 0
                     ) {
@@ -319,24 +320,21 @@ contract CapsuleRenderer is ICapsuleRenderer {
     function _defaultTextOf(bytes3 color)
         internal
         pure
-        returns (bytes2[16][8] memory defaultText)
+        returns (bytes32[8] memory defaultText)
     {
-        defaultText[0][0] = "C";
-        defaultText[0][1] = "A";
-        defaultText[0][2] = "P";
-        defaultText[0][3] = "S";
-        defaultText[0][4] = "U";
-        defaultText[0][5] = "L";
-        defaultText[0][6] = "E";
-
+        defaultText[0] = bytes32(
+            abi.encodePacked(
+                bytes2("C"),
+                bytes2("A"),
+                bytes2("P"),
+                bytes2("S"),
+                bytes2("U"),
+                bytes2("L"),
+                bytes2("E")
+            )
+        );
         bytes memory _color = _bytes3ToHexChars(color);
-        defaultText[1][0] = "#";
-        defaultText[1][1] = _color[0];
-        defaultText[1][2] = _color[1];
-        defaultText[1][3] = _color[2];
-        defaultText[1][4] = _color[3];
-        defaultText[1][5] = _color[4];
-        defaultText[1][6] = _color[5];
+        defaultText[1] = bytes32(abi.encodePacked(bytes2("#"), _color));
     }
 
     /// @notice Calculate specs used to build SVG for capsule. The SvgSpecs struct allows using memory more efficiently when constructing a SVG for a Capsule.
@@ -360,8 +358,9 @@ contract CapsuleRenderer is ICapsuleRenderer {
         uint256 charWidth;
         for (uint256 i; i < linesCount; i++) {
             // Reverse iterate over line
+            bytes2[16] memory line = _bytes32ToBytes2Array(capsule.text[i]);
             for (uint256 j = 16; j > 0; j--) {
-                if (capsule.text[i][j - 1] != 0 && j > charWidth) {
+                if (line[j - 1] != 0 && j > charWidth) {
                     charWidth = j;
                 }
             }
@@ -399,11 +398,7 @@ contract CapsuleRenderer is ICapsuleRenderer {
     /// @dev Returns true if every line of text is empty.
     /// @param text Text to check.
     /// @return true if text is empty.
-    function _isEmptyText(bytes2[16][8] memory text)
-        internal
-        pure
-        returns (bool)
-    {
+    function _isEmptyText(bytes32[8] memory text) internal pure returns (bool) {
         for (uint256 i; i < 8; i++) {
             if (!_isEmptyLine(text[i])) return false;
         }
@@ -414,24 +409,12 @@ contract CapsuleRenderer is ICapsuleRenderer {
     /// @dev Returns true if every byte of text is 0x00.
     /// @param line line to check.
     /// @return true if line is empty.
-    function _isEmptyLine(bytes2[16] memory line) internal pure returns (bool) {
+    function _isEmptyLine(bytes32 line) internal pure returns (bool) {
+        bytes2[16] memory _line = _bytes32ToBytes2Array(line);
         for (uint256 i; i < 16; i++) {
-            if (line[i] != 0) return false;
+            if (_line[i] != 0) return false;
         }
         return true;
-    }
-
-    /// @notice Returns text formatted as an array of readable strings.
-    /// @param text Text to format.
-    /// @return _stringText Text string array.
-    function stringText(bytes2[16][8] memory text)
-        external
-        pure
-        returns (string[8] memory _stringText)
-    {
-        for (uint256 i; i < 8; i++) {
-            _stringText[i] = _stringLine(text[i], false);
-        }
     }
 
     /// @notice Check if font is valid Capsules typeface font.
@@ -442,19 +425,34 @@ contract CapsuleRenderer is ICapsuleRenderer {
         return ITypeface(capsulesTypeface).hasSource(font);
     }
 
-    /// @notice Returns text formatted as a readable string.
+    /// @notice Returns text formatted as an array of readable strings.
+    /// @param text Text to format.
+    /// @return _stringText Text string array.
+    function stringText(bytes32[8] memory text)
+        external
+        pure
+        returns (string[8] memory _stringText)
+    {
+        for (uint256 i; i < 8; i++) {
+            _stringText[i] = _stringLine(text[i], false);
+        }
+    }
+
+    /// @notice Returns line of text formatted as a readable string.
     /// @dev Iterates through each byte in line of text and replaces each byte as needed to create a string that will render in html without issue. Ensures that no illegal characters or 0x00 bytes remain. Non-trailing 0x00 bytes are converted to spaces, trailing 0x00 bytes are trimmed.
     /// @param line Line of text to format.
     /// @param htmlSafe Replace special characters with html-safe codes.
     /// @return stringLine Text string that can be safely rendered in html.
-    function _stringLine(bytes2[16] memory line, bool htmlSafe)
+    function _stringLine(bytes32 line, bool htmlSafe)
         internal
         pure
         returns (string memory stringLine)
     {
+        bytes2[16] memory arr = _bytes32ToBytes2Array(line);
+
         // Build bytes in reverse to more easily trim trailing whitespace
         for (uint256 i = 16; i > 0; i--) {
-            bytes2 char = line[i - 1];
+            bytes2 char = arr[i - 1];
 
             // 0x0 bytes should not be rendered.
             if (char == 0) continue;
@@ -469,16 +467,23 @@ contract CapsuleRenderer is ICapsuleRenderer {
             } else if (htmlSafe && char == 0x0026) {
                 // Replace `&`
                 stringLine = string.concat("&amp;", stringLine);
-            } else {
-                // If bytes2 character is html-safe, we add it while removing individual 0x0 bytes, which cannot be rendered.
-                for (uint256 j = 2; j > 0; j--) {
-                    if (char[j - 1] != bytes1(0)) {
-                        stringLine = string(
-                            abi.encodePacked(char[j - 1], stringLine)
-                        );
-                    }
-                }
+            } else if (char != 0) {
+                // Add char if not bytes2(0)
+                stringLine = string(abi.encodePacked(char, stringLine));
             }
+        }
+    }
+
+    /// @notice Format bytes32 type as array of bytes2
+    /// @param b bytes32 value to convert to array
+    /// @return a Array of bytes2
+    function _bytes32ToBytes2Array(bytes32 b)
+        internal
+        pure
+        returns (bytes2[16] memory a)
+    {
+        for (uint256 i; i < 16; i++) {
+            a[i] = bytes2(abi.encodePacked(b[i * 2], b[i * 2 + 1]));
         }
     }
 

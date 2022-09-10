@@ -33,21 +33,21 @@ export const fontHashes = Object.values(FONTS).map((font) =>
 export const stringTextToBytesText = (text: string[]) => {
   const lines = [];
   for (let i = 0; i < 8; i++) {
-    lines.push(stringToBytes4Line(text.length > i ? text[i] : undefined));
+    lines.push(stringToBytes32(text.length > i ? text[i] : undefined));
   }
   return lines;
 };
 
-export const stringToBytes4Line = (str?: string) => {
-  const arr: string[] = [];
+export const stringToBytes32 = (str?: string) => {
+  let bytes32: string = "";
   for (let i = 0; i < 16; i++) {
     let byte = "0000";
     if (str && str.length > i) {
       byte = Buffer.from(str[i]).toString("hex").padStart(4, "0");
     }
-    arr.push("0x" + byte);
+    bytes32 += byte;
   }
-  return arr;
+  return "0x" + bytes32;
 };
 
 export const emptyNote = stringTextToBytesText([]);
@@ -108,10 +108,10 @@ export async function mintValidUnlockedCapsules(
 }
 
 export async function wallets() {
-  const [deployer, owner, feeReceiver, minter1, minter2] =
+  const [deployer, owner, feeReceiver, minter1, minter2, renderer2] =
     await ethers.getSigners();
 
-  return { deployer, owner, feeReceiver, minter1, minter2 };
+  return { deployer, owner, feeReceiver, minter1, minter2, renderer2 };
 }
 
 export async function deployCapsulesTypeface(capsuleTokenAddress: string) {
@@ -171,9 +171,15 @@ export async function deployCapsuleToken(
     `Transferring ownership of CapsuleToken to ${chalk.cyan(ownerAddress)}...`
   );
 
-  await deployedContract.transferOwnership(ownerAddress);
+  const transferTx = await (
+    await deployedContract.transferOwnership(ownerAddress)
+  ).wait();
 
-  console.log("➡️  Transfer complete");
+  if (!transferTx.status) {
+    console.log(chalk.red("Transfer failed"));
+  } else {
+    console.log("➡️  Transfer complete");
+  }
 
   return { contract: deployedContract, args };
 }

@@ -25,6 +25,7 @@ import { ethers } from "hardhat";
 export let capsulesTypeface: CapsulesTypeface;
 export let capsuleToken: CapsuleToken;
 export let capsuleRenderer: CapsuleRenderer;
+export let testRenderer: CapsuleRenderer;
 export let capsuleMetadata: CapsuleMetadata;
 
 describe("Capsules", async () => {
@@ -78,13 +79,18 @@ describe("Capsules", async () => {
         capsulesTypeface.address
       );
 
-      expect(await capsuleToken.defaultCapsuleRenderer()).to.equal(
+      expect(await capsuleToken.defaultRenderer()).to.equal(
         capsuleRenderer.address
       );
 
       expect(await capsuleToken.capsuleMetadata()).to.equal(
         capsuleMetadata.address
       );
+
+      const TestRenderer = await ethers.getContractFactory(
+        "TestCapsuleRenderer"
+      );
+      testRenderer = (await TestRenderer.deploy()) as CapsuleRenderer;
     });
   });
 
@@ -514,43 +520,53 @@ describe("Capsules", async () => {
       ).to.be.revertedWith("CapsuleLocked()");
     });
 
-    it("Set renderer should succeed and Capsule should return SVG from new renderer", async () => {
+    it("Set invalid renderer should revert", async () => {
       const { minter1 } = await wallets();
 
       const id = 2;
-
-      const TestCapsuleRenderer = await ethers.getContractFactory(
-        "TestCapsuleRenderer"
-      );
-      const testCapsuleRenderer =
-        (await TestCapsuleRenderer.deploy()) as CapsuleRenderer;
 
       const minter1CapsuleToken = signingContract(capsuleToken, minter1);
 
       // Ensure Capsule is using default renderer
       await expect(await minter1CapsuleToken.rendererOf(id)).to.equal(
-        await minter1CapsuleToken.defaultCapsuleRenderer()
+        await minter1CapsuleToken.defaultRenderer()
       );
 
       // Set new renderer
       await expect(
-        minter1CapsuleToken.setRendererOf(id, testCapsuleRenderer.address)
-      )
-        .to.emit(minter1CapsuleToken, "SetRendererOf")
-        .withArgs(id, testCapsuleRenderer.address);
-
-      await expect(await minter1CapsuleToken.rendererOf(id)).to.equal(
-        testCapsuleRenderer.address
-      );
-
-      // Ensure CapsuleToken svgOf is using new renderer
-      const svgFromCapsuleToken = await minter1CapsuleToken.svgOf(id);
-      const capsule = await minter1CapsuleToken.capsuleOf(1);
-      const svgFromTestRenderer = await testCapsuleRenderer[
-        "svgOf((uint256,bytes3,(uint256,string),bytes2[16][8],bool,bool))"
-      ](capsule);
-      await expect(svgFromCapsuleToken).to.equal(svgFromTestRenderer);
+        minter1CapsuleToken.setRendererOf(id, testRenderer.address)
+      ).to.be.revertedWith("InvalidRenderer()");
     });
+
+    // it("Set renderer should succeed and Capsule should return SVG from new renderer", async () => {
+    //   const { minter1 } = await wallets();
+
+    //   const id = 2;
+
+    //   const minter1CapsuleToken = signingContract(capsuleToken, minter1);
+
+    //   // Ensure Capsule is using default renderer
+    //   await expect(await minter1CapsuleToken.rendererOf(id)).to.equal(
+    //     await minter1CapsuleToken.defaultRenderer()
+    //   );
+
+    //   // Set new renderer
+    //   await expect(minter1CapsuleToken.setRendererOf(id, testRenderer.address))
+    //     .to.emit(minter1CapsuleToken, "SetRendererOf")
+    //     .withArgs(id, testRenderer.address);
+
+    //   await expect(await minter1CapsuleToken.rendererOf(id)).to.equal(
+    //     testRenderer.address
+    //   );
+
+    //   // Ensure CapsuleToken svgOf is using new renderer
+    //   const svgFromCapsuleToken = await minter1CapsuleToken.svgOf(id);
+    //   const capsule = await minter1CapsuleToken.capsuleOf(1);
+    //   const svgFromTestRenderer = await testRenderer[
+    //     "svgOf((uint256,bytes3,(uint256,string),bytes32[8],bool,bool))"
+    //   ](capsule);
+    //   await expect(svgFromCapsuleToken).to.equal(svgFromTestRenderer);
+    // });
   });
 
   describe("Admin", async () => {
@@ -584,24 +600,22 @@ describe("Capsules", async () => {
       const minter1CapsuleToken = signingContract(capsuleToken, minter1);
 
       return expect(
-        minter1CapsuleToken.setDefaultCapsuleRenderer(minter1.address)
+        minter1CapsuleToken.setDefaultRenderer(minter1.address)
       ).to.be.revertedWith("Ownable: caller is not the owner");
     });
 
     it("Set default renderer as owner should succeed", async () => {
-      const { owner } = await wallets();
+      const { owner, renderer2 } = await wallets();
 
       const ownerCapsuleToken = signingContract(capsuleToken, owner);
 
-      const newRendererAddress = owner.address;
+      const newRendererAddress = renderer2.address;
 
-      await expect(
-        ownerCapsuleToken.setDefaultCapsuleRenderer(newRendererAddress)
-      )
-        .to.emit(capsuleToken, "SetDefaultCapsuleRenderer")
+      await expect(ownerCapsuleToken.setDefaultRenderer(newRendererAddress))
+        .to.emit(capsuleToken, "SetDefaultRenderer")
         .withArgs(newRendererAddress);
 
-      expect(await ownerCapsuleToken.defaultCapsuleRenderer()).to.equal(
+      expect(await ownerCapsuleToken.defaultRenderer()).to.equal(
         newRendererAddress
       );
     });
@@ -708,6 +722,17 @@ describe("Capsules", async () => {
       const ownerCapsuleToken = signingContract(capsuleToken, owner);
 
       return expect(ownerCapsuleToken.pause()).to.emit(capsuleToken, "Paused");
+    });
+
+    it("Unpause as owner should succeed", async () => {
+      const { owner } = await wallets();
+
+      const ownerCapsuleToken = signingContract(capsuleToken, owner);
+
+      return expect(ownerCapsuleToken.unpause()).to.emit(
+        capsuleToken,
+        "Unpaused"
+      );
     });
   });
 });

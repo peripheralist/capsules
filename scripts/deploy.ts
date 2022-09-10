@@ -130,10 +130,8 @@ const main = async () => {
   if ((await capsuleToken.capsuleMetadata()) !== capsuleMetadata.address) {
     console.log(`🛑 CapsuleToken.capsuleMetadata() wrong address.`);
   }
-  if (
-    (await capsuleToken.defaultCapsuleRenderer()) !== capsuleRenderer.address
-  ) {
-    console.log(`🛑 CapsuleToken.defaultCapsuleRenderer() wrong address.`);
+  if ((await capsuleToken.defaultRenderer()) !== capsuleRenderer.address) {
+    console.log(`🛑 CapsuleToken.defaultRenderer() wrong address.`);
   }
 
   console.log("Done");
