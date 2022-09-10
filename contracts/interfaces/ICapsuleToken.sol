@@ -19,7 +19,7 @@ struct Capsule {
     uint256 id;
     bytes3 color;
     Font font;
-    bytes4[16][8] text;
+    bytes2[16][8] text;
     bool isPure;
     bool isLocked;
 }
@@ -62,7 +62,7 @@ interface ICapsuleToken {
     function textOf(uint256 capsuleId)
         external
         view
-        returns (bytes4[16][8] memory);
+        returns (bytes2[16][8] memory);
 
     function fontOf(uint256 capsuleId) external view returns (Font memory);
 
@@ -78,7 +78,7 @@ interface ICapsuleToken {
     function mintWithText(
         bytes3 color,
         Font calldata font,
-        bytes4[16][8] calldata text
+        bytes2[16][8] calldata text
     ) external payable returns (uint256);
 
     function mintPureColorForFont(address to, Font calldata font)
@@ -89,7 +89,7 @@ interface ICapsuleToken {
 
     function editCapsule(
         uint256 capsuleId,
-        bytes4[16][8] calldata text,
+        bytes2[16][8] calldata text,
         Font calldata font,
         bool lock
     ) external;
@@ -106,6 +106,8 @@ interface ICapsuleToken {
         returns (bool);
 
     function isValidColor(bytes3 color) external view returns (bool);
+
+    function isValidCapsuleText(uint256 capsuleId) external view returns (bool);
 
     function withdraw() external;
 

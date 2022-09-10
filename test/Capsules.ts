@@ -16,7 +16,7 @@ import {
   deployCapsulesTypeface,
   emptyNote,
   mintPrice,
-  textToBytes4Lines,
+  stringTextToBytesText,
   wallets,
   deployCapsuleMetadata,
 } from "../scripts/utils";
@@ -267,7 +267,7 @@ describe("Capsules", async () => {
           weight: 400,
           style: "normal",
         },
-        textToBytes4Lines(["®"]),
+        stringTextToBytesText(["®"]),
         {
           value: mintPrice,
         }
@@ -338,7 +338,7 @@ describe("Capsules", async () => {
 
       const color = "0x00aaff";
 
-      const text = textToBytes4Lines(["asdf"]);
+      const text = stringTextToBytesText(["asdf"]);
 
       return expect(
         minter1CapsuleToken.mintWithText(
@@ -469,7 +469,7 @@ describe("Capsules", async () => {
 
       await signingContract(capsuleToken, minter1).editCapsule(
         id,
-        textToBytes4Lines(["®"]),
+        stringTextToBytesText(["®"]),
         {
           weight: 400,
           style: "normal",
@@ -547,7 +547,7 @@ describe("Capsules", async () => {
       const svgFromCapsuleToken = await minter1CapsuleToken.svgOf(id);
       const capsule = await minter1CapsuleToken.capsuleOf(1);
       const svgFromTestRenderer = await testCapsuleRenderer[
-        "svgOf((uint256,bytes3,(uint256,string),bytes4[16][8],bool,bool))"
+        "svgOf((uint256,bytes3,(uint256,string),bytes2[16][8],bool,bool))"
       ](capsule);
       await expect(svgFromCapsuleToken).to.equal(svgFromTestRenderer);
     });

@@ -50,18 +50,18 @@ interface ITypeface {
     function setSource(Font memory font, bytes memory source) external;
 }
 
-interface IASCIITypeface is ITypeface {
-    /// @notice Check if typeface includes a glyph for a specific character code point.
-    /// @dev 1 byte supports all ASCII unicodes.
-    /// @param codePoint Character code point.
-    /// @return true True if supported.
-    function supportsCodePoint(bytes1 codePoint) external view returns (bool);
-}
+// interface IASCIITypeface is ITypeface {
+//     /// @notice Check if typeface includes a glyph for a specific character code point.
+//     /// @dev 1 byte supports all ASCII unicodes.
+//     /// @param codePoint Character code point.
+//     /// @return true True if supported.
+//     function supportsASCIICodePoint(bytes1 codePoint) external view returns (bool);
+// }
 
-interface IBMPTypeface is ITypeface {
-    /// @notice Check if typeface includes a glyph for a specific character code point.
-    /// @dev 2 bytes supports the entirety of the Basic Multilingual Plane (BMP) of unicodes.
-    /// @param codePoint Character code point.
-    /// @return true True if supported.
-    function supportsCodePoint(bytes2 codePoint) external view returns (bool);
-}
+// interface IBMPTypeface is ITypeface {
+//     /// @notice Check if typeface includes a glyph for a specific character code point.
+//     /// @dev 2 bytes supports the entirety of the Basic Multilingual Plane (BMP) of unicodes.
+//     /// @param codePoint Character code point.
+//     /// @return true True if supported.
+//     function supportsBMPCodePoint(bytes2 codePoint) external view returns (bool);
+// }

@@ -65,6 +65,7 @@ contract CapsuleMetadata is ICapsuleMetadata {
     /// @notice Format bytes3 type to 6 hexadecimal ascii bytes.
     /// @param b bytes3 value to convert to hex characters.
     /// @return o hex character bytes.
+    // TODO write custom?
     function _bytes3ToHexChars(bytes3 b)
         internal
         pure

@@ -184,7 +184,7 @@ contract CapsuleRenderer is ICapsuleRenderer {
             // Add top edge row element
             contentArea = abi.encodePacked(
                 contentArea,
-                '><g opacity="0.3"><use href="#',
+                '><g opacity="0.2"><use href="#',
                 specs.edgeRowId,
                 '"></use>'
             );
@@ -291,18 +291,18 @@ contract CapsuleRenderer is ICapsuleRenderer {
     /// @dev Text is valid if every bytes is supported by CapsulesTypeface, or is 0x00.
     /// @param text UTF8-encoded text bytes to check validity of.
     /// @return true True if text is valid.
-    function isValidText(bytes4[16][8] memory text) public view returns (bool) {
+    function isValidText(bytes2[16][8] memory text) public view returns (bool) {
         unchecked {
             for (uint256 i; i < 8; i++) {
-                bytes4[16] memory line = text[i];
-
                 for (uint256 j; j < 16; j++) {
-                    bytes4 char = line[j];
+                    bytes2 char = text[i][j];
 
                     // return false if any single character is unsupported
                     if (
-                        !ITypeface(capsulesTypeface).isSupportedChar(char) &&
-                        char != bytes4(0)
+                        !ITypeface(capsulesTypeface).supportsCodePoint(
+                            // we can't directly convert bytes2 to bytes3 because 0 byte padding would be added to the right instead of the left
+                            bytes3(abi.encodePacked(bytes1(0), char))
+                        ) && char != 0
                     ) {
                         return false;
                     }
@@ -319,24 +319,24 @@ contract CapsuleRenderer is ICapsuleRenderer {
     function _defaultTextOf(bytes3 color)
         internal
         pure
-        returns (bytes4[16][8] memory defaultText)
+        returns (bytes2[16][8] memory defaultText)
     {
-        defaultText[0][0] = bytes4("C");
-        defaultText[0][1] = bytes4("A");
-        defaultText[0][2] = bytes4("P");
-        defaultText[0][3] = bytes4("S");
-        defaultText[0][4] = bytes4("U");
-        defaultText[0][5] = bytes4("L");
-        defaultText[0][6] = bytes4("E");
+        defaultText[0][0] = "C";
+        defaultText[0][1] = "A";
+        defaultText[0][2] = "P";
+        defaultText[0][3] = "S";
+        defaultText[0][4] = "U";
+        defaultText[0][5] = "L";
+        defaultText[0][6] = "E";
 
         bytes memory _color = _bytes3ToHexChars(color);
-        defaultText[1][0] = bytes4("#");
-        defaultText[1][1] = bytes4(_color[0]);
-        defaultText[1][2] = bytes4(_color[1]);
-        defaultText[1][3] = bytes4(_color[2]);
-        defaultText[1][4] = bytes4(_color[3]);
-        defaultText[1][5] = bytes4(_color[4]);
-        defaultText[1][6] = bytes4(_color[5]);
+        defaultText[1][0] = "#";
+        defaultText[1][1] = _color[0];
+        defaultText[1][2] = _color[1];
+        defaultText[1][3] = _color[2];
+        defaultText[1][4] = _color[3];
+        defaultText[1][5] = _color[4];
+        defaultText[1][6] = _color[5];
     }
 
     /// @notice Calculate specs used to build SVG for capsule. The SvgSpecs struct allows using memory more efficiently when constructing a SVG for a Capsule.
@@ -361,7 +361,7 @@ contract CapsuleRenderer is ICapsuleRenderer {
         for (uint256 i; i < linesCount; i++) {
             // Reverse iterate over line
             for (uint256 j = 16; j > 0; j--) {
-                if (capsule.text[i][j - 1] != bytes4(0) && j > charWidth) {
+                if (capsule.text[i][j - 1] != 0 && j > charWidth) {
                     charWidth = j;
                 }
             }
@@ -399,7 +399,7 @@ contract CapsuleRenderer is ICapsuleRenderer {
     /// @dev Returns true if every line of text is empty.
     /// @param text Text to check.
     /// @return true if text is empty.
-    function _isEmptyText(bytes4[16][8] memory text)
+    function _isEmptyText(bytes2[16][8] memory text)
         internal
         pure
         returns (bool)
@@ -414,9 +414,9 @@ contract CapsuleRenderer is ICapsuleRenderer {
     /// @dev Returns true if every byte of text is 0x00.
     /// @param line line to check.
     /// @return true if line is empty.
-    function _isEmptyLine(bytes4[16] memory line) internal pure returns (bool) {
+    function _isEmptyLine(bytes2[16] memory line) internal pure returns (bool) {
         for (uint256 i; i < 16; i++) {
-            if (line[i] != bytes4(0)) return false;
+            if (line[i] != 0) return false;
         }
         return true;
     }
@@ -424,7 +424,7 @@ contract CapsuleRenderer is ICapsuleRenderer {
     /// @notice Returns text formatted as an array of readable strings.
     /// @param text Text to format.
     /// @return _stringText Text string array.
-    function stringText(bytes4[16][8] memory text)
+    function stringText(bytes2[16][8] memory text)
         external
         pure
         returns (string[8] memory _stringText)
@@ -447,31 +447,31 @@ contract CapsuleRenderer is ICapsuleRenderer {
     /// @param line Line of text to format.
     /// @param htmlSafe Replace special characters with html-safe codes.
     /// @return stringLine Text string that can be safely rendered in html.
-    function _stringLine(bytes4[16] memory line, bool htmlSafe)
+    function _stringLine(bytes2[16] memory line, bool htmlSafe)
         internal
         pure
         returns (string memory stringLine)
     {
         // Build bytes in reverse to more easily trim trailing whitespace
         for (uint256 i = 16; i > 0; i--) {
-            bytes4 char = line[i - 1];
+            bytes2 char = line[i - 1];
 
             // 0x0 bytes should not be rendered.
-            if (char == bytes4(0)) continue;
+            if (char == 0) continue;
 
             // Some bytes cannot render in SVG text, so we replace them with their "&"-prefixed html name code.
-            if (htmlSafe && char == 0x0000003c) {
+            if (htmlSafe && char == 0x003c) {
                 // Replace `<`
                 stringLine = string.concat("&lt;", stringLine);
-            } else if (htmlSafe && char == 0x0000003E) {
+            } else if (htmlSafe && char == 0x003E) {
                 // Replace `>`
                 stringLine = string.concat("&gt;", stringLine);
-            } else if (htmlSafe && char == 0x00000026) {
+            } else if (htmlSafe && char == 0x0026) {
                 // Replace `&`
                 stringLine = string.concat("&amp;", stringLine);
             } else {
-                // If bytes4 character is html-safe, we add it while removing individual 0x0 bytes, which cannot be rendered.
-                for (uint256 j = 4; j > 0; j--) {
+                // If bytes2 character is html-safe, we add it while removing individual 0x0 bytes, which cannot be rendered.
+                for (uint256 j = 2; j > 0; j--) {
                     if (char[j - 1] != bytes1(0)) {
                         stringLine = string(
                             abi.encodePacked(char[j - 1], stringLine)

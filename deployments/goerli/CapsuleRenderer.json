@@ -1,5 +1,5 @@
 {
-      "address": "0xC40c9Bd09fb8e207cB8430C76B1496fE45247DC0", 
+      "address": "0xD3dBeAB564C304287f959CE35E023deE804d2466", 
       "abi": [
   {
     "inputs": [
@@ -59,9 +59,9 @@
   {
     "inputs": [
       {
-        "internalType": "bytes4[16][8]",
+        "internalType": "bytes2[16][8]",
         "name": "text",
-        "type": "bytes4[16][8]"
+        "type": "bytes2[16][8]"
       }
     ],
     "name": "isValidText",
@@ -78,9 +78,9 @@
   {
     "inputs": [
       {
-        "internalType": "bytes4[16][8]",
+        "internalType": "bytes2[16][8]",
         "name": "text",
-        "type": "bytes4[16][8]"
+        "type": "bytes2[16][8]"
       }
     ],
     "name": "stringText",
@@ -126,9 +126,9 @@
             "type": "tuple"
           },
           {
-            "internalType": "bytes4[16][8]",
+            "internalType": "bytes2[16][8]",
             "name": "text",
-            "type": "bytes4[16][8]"
+            "type": "bytes2[16][8]"
           },
           {
             "internalType": "bool",
@@ -144,18 +144,13 @@
         "internalType": "struct Capsule",
         "name": "capsule",
         "type": "tuple"
-      },
-      {
-        "internalType": "bool",
-        "name": "square",
-        "type": "bool"
       }
     ],
     "name": "svgOf",
     "outputs": [
       {
         "internalType": "string",
-        "name": "base64Svg",
+        "name": "",
         "type": "string"
       }
     ],
@@ -194,9 +189,9 @@
             "type": "tuple"
           },
           {
-            "internalType": "bytes4[16][8]",
+            "internalType": "bytes2[16][8]",
             "name": "text",
-            "type": "bytes4[16][8]"
+            "type": "bytes2[16][8]"
           },
           {
             "internalType": "bool",
@@ -212,13 +207,18 @@
         "internalType": "struct Capsule",
         "name": "capsule",
         "type": "tuple"
+      },
+      {
+        "internalType": "bool",
+        "name": "square",
+        "type": "bool"
       }
     ],
     "name": "svgOf",
     "outputs": [
       {
         "internalType": "string",
-        "name": "",
+        "name": "base64Svg",
         "type": "string"
       }
     ],

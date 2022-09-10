@@ -27,113 +27,110 @@ contract CapsulesTypeface is Typeface {
         capsuleToken = ICapsuleToken(_capsuleToken);
     }
 
-    /// @notice Returns true if bytes4 char is supported by Capsules typeface.
-    function isSupportedChar(bytes4 char) external pure returns (bool) {
-        // TODO update to use utf8 encoding
-
+    function supportsCodePoint(bytes3 cp) external pure returns (bool) {
         // Optimize gas by first checking outer bounds of byte ranges
-        if (char < 0x00000020 || char > 0x0000e069) return false;
+        if (cp < 0x000020 || cp > 0x00e069) return false;
 
-        return ((char >= 0x00000020 && char <= 0x0000007e) ||
-            (char >= 0x000000a0 && char <= 0x000000a8) ||
-            (char >= 0x000000ab && char <= 0x000000ac) ||
-            (char >= 0x000000af && char <= 0x000000b1) ||
-            char == 0x000000b4 ||
-            (char >= 0x000000b6 && char <= 0x000000b7) ||
-            (char >= 0x000000ba && char <= 0x000000bb) ||
-            (char >= 0x000000bf && char <= 0x000000c4) ||
-            (char >= 0x000000c6 && char <= 0x000000cf) ||
-            (char >= 0x000000d1 && char <= 0x000000d7) ||
-            (char >= 0x000000d9 && char <= 0x000000dc) ||
-            (char >= 0x000000e0 && char <= 0x000000e4) ||
-            (char >= 0x000000e6 && char <= 0x000000ef) ||
-            (char >= 0x000000f1 && char <= 0x000000fc) ||
-            (char >= 0x000000ff && char <= 0x00000101) ||
-            (char >= 0x00000112 && char <= 0x00000113) ||
-            (char >= 0x00000128 && char <= 0x0000012b) ||
-            char == 0x00000131 ||
-            (char >= 0x0000014c && char <= 0x0000014d) ||
-            (char >= 0x00000168 && char <= 0x0000016b) ||
-            char == 0x00000178 ||
-            char == 0x0000018e ||
-            char == 0x00000192 ||
-            char == 0x00000262 ||
-            char == 0x0000026a ||
-            char == 0x00000274 ||
-            (char >= 0x00000280 && char <= 0x00000281) ||
-            char == 0x0000028f ||
-            char == 0x00000299 ||
-            char == 0x0000029c ||
-            char == 0x0000029f ||
-            (char >= 0x000002c2 && char <= 0x000002c3) ||
-            char == 0x000002c6 ||
-            char == 0x000002dc ||
-            char == 0x0000039e ||
-            char == 0x000003c0 ||
-            char == 0x00000e3f ||
-            (char >= 0x00001d00 && char <= 0x00001d01) ||
-            char == 0x00001d05 ||
-            char == 0x00001d07 ||
-            (char >= 0x00001d0a && char <= 0x00001d0b) ||
-            (char >= 0x00001d0d && char <= 0x00001d0e) ||
-            (char >= 0x00001d18 && char <= 0x00001d19) ||
-            char == 0x00001d1b ||
-            (char >= 0x00002013 && char <= 0x00002015) ||
-            (char >= 0x00002017 && char <= 0x0000201a) ||
-            (char >= 0x0000201c && char <= 0x0000201e) ||
-            (char >= 0x00002020 && char <= 0x00002022) ||
-            char == 0x00002026 ||
-            char == 0x00002030 ||
-            (char >= 0x00002032 && char <= 0x00002033) ||
-            (char >= 0x00002039 && char <= 0x0000203a) ||
-            char == 0x0000203c ||
-            char == 0x0000203e ||
-            char == 0x00002044 ||
-            char == 0x000020a8 ||
-            char == 0x000020ac ||
-            char == 0x000020b4 ||
-            char == 0x000020bd ||
-            char == 0x000020bf ||
-            char == 0x00002184 ||
-            (char >= 0x00002190 && char <= 0x00002199) ||
-            (char >= 0x000021ba && char <= 0x000021bb) ||
-            char == 0x00002206 ||
-            char == 0x0000220f ||
-            (char >= 0x00002211 && char <= 0x00002212) ||
-            char == 0x0000221a ||
-            char == 0x0000221e ||
-            char == 0x0000222b ||
-            char == 0x00002248 ||
-            char == 0x00002260 ||
-            (char >= 0x00002264 && char <= 0x00002265) ||
-            (char >= 0x00002302 && char <= 0x00002304) ||
-            char == 0x0000231b ||
-            char == 0x000023cf ||
-            (char >= 0x000023e9 && char <= 0x000023ea) ||
-            (char >= 0x000023ed && char <= 0x000023ef) ||
-            (char >= 0x000023f8 && char <= 0x000023fa) ||
-            char == 0x000025b2 ||
-            char == 0x000025b6 ||
-            char == 0x000025bc ||
-            char == 0x000025c0 ||
-            char == 0x000025ca ||
-            char == 0x00002600 ||
-            char == 0x00002610 ||
-            char == 0x00002612 ||
-            char == 0x00002630 ||
-            (char >= 0x00002639 && char <= 0x0000263a) ||
-            char == 0x0000263c ||
-            char == 0x00002665 ||
-            (char >= 0x00002680 && char <= 0x00002685) ||
-            (char >= 0x00002690 && char <= 0x00002691) ||
-            char == 0x000026a1 ||
-            char == 0x00002713 ||
-            (char >= 0x00002b05 && char <= 0x00002b0d) ||
-            char == 0x00002b95 ||
-            char == 0x0000a730 ||
-            char == 0x0000a7af ||
-            (char >= 0x0000e000 && char <= 0x0000e02b) ||
-            char == 0x0000e069);
+        return ((cp >= 0x000020 && cp <= 0x00007e) ||
+            (cp >= 0x0000a0 && cp <= 0x0000a8) ||
+            (cp >= 0x0000ab && cp <= 0x0000ac) ||
+            (cp >= 0x0000af && cp <= 0x0000b1) ||
+            cp == 0x0000b4 ||
+            (cp >= 0x0000b6 && cp <= 0x0000b7) ||
+            (cp >= 0x0000ba && cp <= 0x0000bb) ||
+            (cp >= 0x0000bf && cp <= 0x0000c4) ||
+            (cp >= 0x0000c6 && cp <= 0x0000cf) ||
+            (cp >= 0x0000d1 && cp <= 0x0000d7) ||
+            (cp >= 0x0000d9 && cp <= 0x0000dc) ||
+            (cp >= 0x0000e0 && cp <= 0x0000e4) ||
+            (cp >= 0x0000e6 && cp <= 0x0000ef) ||
+            (cp >= 0x0000f1 && cp <= 0x0000fc) ||
+            (cp >= 0x0000ff && cp <= 0x000101) ||
+            (cp >= 0x000112 && cp <= 0x000113) ||
+            (cp >= 0x000128 && cp <= 0x00012b) ||
+            cp == 0x000131 ||
+            (cp >= 0x00014c && cp <= 0x00014d) ||
+            (cp >= 0x000168 && cp <= 0x00016b) ||
+            cp == 0x000178 ||
+            cp == 0x00018e ||
+            cp == 0x000192 ||
+            cp == 0x000262 ||
+            cp == 0x00026a ||
+            cp == 0x000274 ||
+            (cp >= 0x000280 && cp <= 0x000281) ||
+            cp == 0x00028f ||
+            cp == 0x000299 ||
+            cp == 0x00029c ||
+            cp == 0x00029f ||
+            (cp >= 0x0002c2 && cp <= 0x0002c3) ||
+            cp == 0x0002c6 ||
+            cp == 0x0002dc ||
+            cp == 0x00039e ||
+            cp == 0x0003c0 ||
+            cp == 0x000e3f ||
+            (cp >= 0x001d00 && cp <= 0x001d01) ||
+            cp == 0x001d05 ||
+            cp == 0x001d07 ||
+            (cp >= 0x001d0a && cp <= 0x001d0b) ||
+            (cp >= 0x001d0d && cp <= 0x001d0e) ||
+            (cp >= 0x001d18 && cp <= 0x001d19) ||
+            cp == 0x001d1b ||
+            (cp >= 0x002013 && cp <= 0x002015) ||
+            (cp >= 0x002017 && cp <= 0x00201a) ||
+            (cp >= 0x00201c && cp <= 0x00201e) ||
+            (cp >= 0x002020 && cp <= 0x002022) ||
+            cp == 0x002026 ||
+            cp == 0x002030 ||
+            (cp >= 0x002032 && cp <= 0x002033) ||
+            (cp >= 0x002039 && cp <= 0x00203a) ||
+            cp == 0x00203c ||
+            cp == 0x00203e ||
+            cp == 0x002044 ||
+            cp == 0x0020a8 ||
+            cp == 0x0020ac ||
+            cp == 0x0020b4 ||
+            cp == 0x0020bd ||
+            cp == 0x0020bf ||
+            cp == 0x002184 ||
+            (cp >= 0x002190 && cp <= 0x002199) ||
+            (cp >= 0x0021ba && cp <= 0x0021bb) ||
+            cp == 0x002206 ||
+            cp == 0x00220f ||
+            (cp >= 0x002211 && cp <= 0x002212) ||
+            cp == 0x00221a ||
+            cp == 0x00221e ||
+            cp == 0x00222b ||
+            cp == 0x002248 ||
+            cp == 0x002260 ||
+            (cp >= 0x002264 && cp <= 0x002265) ||
+            (cp >= 0x002302 && cp <= 0x002304) ||
+            cp == 0x00231b ||
+            cp == 0x0023cf ||
+            (cp >= 0x0023e9 && cp <= 0x0023ea) ||
+            (cp >= 0x0023ed && cp <= 0x0023ef) ||
+            (cp >= 0x0023f8 && cp <= 0x0023fa) ||
+            cp == 0x0025b2 ||
+            cp == 0x0025b6 ||
+            cp == 0x0025bc ||
+            cp == 0x0025c0 ||
+            cp == 0x0025ca ||
+            cp == 0x002600 ||
+            cp == 0x002610 ||
+            cp == 0x002612 ||
+            cp == 0x002630 ||
+            (cp >= 0x002639 && cp <= 0x00263a) ||
+            cp == 0x00263c ||
+            cp == 0x002665 ||
+            (cp >= 0x002680 && cp <= 0x002685) ||
+            (cp >= 0x002690 && cp <= 0x002691) ||
+            cp == 0x0026a1 ||
+            cp == 0x002713 ||
+            (cp >= 0x002b05 && cp <= 0x002b0d) ||
+            cp == 0x002b95 ||
+            cp == 0x00a730 ||
+            cp == 0x00a7af ||
+            (cp >= 0x00e000 && cp <= 0x00e02b) ||
+            cp == 0x00e069);
     }
 
     /// @notice Mint pure color Capsule token to sender when sender sets font source.

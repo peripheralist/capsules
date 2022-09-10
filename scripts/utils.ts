@@ -30,7 +30,7 @@ export const fontHashes = Object.values(FONTS).map((font) =>
   keccak256(Buffer.from(font))
 );
 
-export const textToBytes4Lines = (text: string[]) => {
+export const stringTextToBytesText = (text: string[]) => {
   const lines = [];
   for (let i = 0; i < 8; i++) {
     lines.push(stringToBytes4Line(text.length > i ? text[i] : undefined));
@@ -41,16 +41,16 @@ export const textToBytes4Lines = (text: string[]) => {
 export const stringToBytes4Line = (str?: string) => {
   const arr: string[] = [];
   for (let i = 0; i < 16; i++) {
-    let byte = "00000000";
+    let byte = "0000";
     if (str && str.length > i) {
-      byte = Buffer.from(str[i]).toString("hex").padStart(8, "0");
+      byte = Buffer.from(str[i]).toString("hex").padStart(4, "0");
     }
     arr.push("0x" + byte);
   }
   return arr;
 };
 
-export const emptyNote = textToBytes4Lines([]);
+export const emptyNote = stringTextToBytesText([]);
 
 export async function skipToBlockNumber(seconds: number) {
   await ethers.provider.send("evm_mine", [seconds]);
@@ -80,9 +80,7 @@ export async function mintValidUnlockedCapsules(
 
   const skip = (await capsules.totalSupply()).toNumber();
 
-  const validHexes = hexes
-    .filter((h) => !pureColors.includes(h))
-    .slice(skip);
+  const validHexes = hexes.filter((h) => !pureColors.includes(h)).slice(skip);
 
   const _count =
     count !== undefined

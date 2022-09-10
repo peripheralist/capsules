@@ -29,7 +29,7 @@ contract TestCapsuleRenderer is ICapsuleRenderer {
         return address(0);
     }
 
-    function stringText(bytes4[16][8] memory)
+    function stringText(bytes2[16][8] memory)
         external
         pure
         returns (string[8] memory)
@@ -39,7 +39,7 @@ contract TestCapsuleRenderer is ICapsuleRenderer {
         return true;
     }
 
-    function isValidText(bytes4[16][8] memory) external pure returns (bool) {
+    function isValidText(bytes2[16][8] memory) external pure returns (bool) {
         return true;
     }
 }

@@ -9,10 +9,12 @@
 
   @dev `bytes3` type is used to store the RGB hex-encoded color that is unique to each Capsule. 
 
-  `bytes4[16][8]` type is used to store text: 8 lines of 16 characters, where each character is utf8-encoded as a bytes4 value. Although many characters can be encoded using fewer than 4 bytes, bytes4 is used to ensure that all characters are supported.
+  `bytes2[16][8]` type is used to store text: 8 lines of 16 characters, where each character is utf8-encoded as a bytes4 value. Although many characters can be encoded using fewer than 4 bytes, bytes4 is used to ensure that all characters are supported.
 
   To avoid high gas costs, text isn't validated when minting or editing. Instead, we rely on the Renderer contract to render a safe image even if the Capsule text is invalid.
  */
+
+// TODO store bytes2[16][8] as bytes32[8]?
 
 pragma solidity 0.8.14;
 
@@ -171,7 +173,7 @@ contract CapsuleToken is
     uint256 public royalty;
 
     /// Mapping of Capsule ID to text
-    mapping(uint256 => bytes4[16][8]) internal _textOf;
+    mapping(uint256 => bytes2[16][8]) internal _textOf;
 
     /// Mapping of Capsule ID to color
     mapping(uint256 => bytes3) internal _colorOf;
@@ -218,7 +220,7 @@ contract CapsuleToken is
     function mintWithText(
         bytes3 color,
         Font calldata font,
-        bytes4[16][8] calldata text
+        bytes2[16][8] calldata text
     )
         external
         payable
@@ -354,7 +356,7 @@ contract CapsuleToken is
     function textOf(uint256 capsuleId)
         public
         view
-        returns (bytes4[16][8] memory)
+        returns (bytes2[16][8] memory)
     {
         return _textOf[capsuleId];
     }
@@ -414,6 +416,21 @@ contract CapsuleToken is
         return true;
     }
 
+    /// @notice Check if Capsule text is valid.
+    /// @dev Checks validity using Capsule's renderer contract.
+    /// @param capsuleId ID of Capsule.
+    /// @return true True if Capsule text is valid.
+    function isValidCapsuleText(uint256 capsuleId)
+        external
+        view
+        returns (bool)
+    {
+        return
+            ICapsuleRenderer(rendererOf(capsuleId)).isValidText(
+                textOf(capsuleId)
+            );
+    }
+
     /// @notice Withdraws balance of this contract to the feeReceiver address.
     function withdraw() external nonReentrant {
         uint256 balance = address(this).balance;
@@ -467,7 +484,7 @@ contract CapsuleToken is
     /// @param lock Lock capsule, preventing any future edits.
     function editCapsule(
         uint256 capsuleId,
-        bytes4[16][8] calldata text,
+        bytes2[16][8] calldata text,
         Font calldata font,
         bool lock
     ) public {
@@ -595,7 +612,7 @@ contract CapsuleToken is
 
     function _editCapsule(
         uint256 capsuleId,
-        bytes4[16][8] calldata text,
+        bytes2[16][8] calldata text,
         Font calldata font,
         bool lock
     )
@@ -625,7 +642,7 @@ contract CapsuleToken is
     /// @notice Check if all lines of text are empty.
     /// @param text Text to check.
     /// @return true if text is empty.
-    function _isEmptyText(bytes4[16][8] memory text)
+    function _isEmptyText(bytes2[16][8] memory text)
         internal
         pure
         returns (bool)
@@ -640,9 +657,9 @@ contract CapsuleToken is
     /// @dev Returns true if every byte of text is 0x00.
     /// @param line line to check.
     /// @return true if line is empty.
-    function _isEmptyLine(bytes4[16] memory line) internal pure returns (bool) {
+    function _isEmptyLine(bytes2[16] memory line) internal pure returns (bool) {
         for (uint256 i; i < 16; i++) {
-            if (line[i] != bytes4(0)) return false;
+            if (line[i] != 0) return false;
         }
         return true;
     }
