@@ -39,6 +39,7 @@ import "./interfaces/ITypeface.sol";
 error ValueBelowMintPrice();
 error InvalidFontForRenderer(address renderer);
 error InvalidColor();
+error InvalidRenderer();
 error PureColorNotAllowed();
 error NotCapsulesTypeface();
 error ColorAlreadyMinted(uint256 capsuleId);
@@ -73,6 +74,12 @@ contract CapsuleToken is
     modifier onlyValidFontForRenderer(Font memory font, address renderer) {
         if (!isValidFontForRenderer(font, renderer))
             revert InvalidFontForRenderer(renderer);
+        _;
+    }
+
+    /// @notice Require that the font is valid for a given renderer.
+    modifier onlyValidRenderer(address renderer) {
+        if (!isValidRenderer(renderer)) revert InvalidRenderer();
         _;
     }
 
@@ -121,14 +128,14 @@ contract CapsuleToken is
 
     constructor(
         address _capsulesTypeface,
-        address _defaultCapsuleRenderer,
+        address _defaultRenderer,
         address _capsuleMetadata,
         address _feeReceiver,
         bytes3[] memory _pureColors,
         uint256 _royalty
     ) ERC721A("Capsules", "CAPS") {
         capsulesTypeface = _capsulesTypeface;
-        defaultCapsuleRenderer = _defaultCapsuleRenderer;
+        defaultRenderer = _defaultRenderer;
         capsuleMetadata = _capsuleMetadata;
         feeReceiver = _feeReceiver;
         pureColors = _pureColors;
@@ -154,8 +161,8 @@ contract CapsuleToken is
     /// CapsulesTypeface address
     address public immutable capsulesTypeface;
 
-    /// Default CapsuleRenderer address
-    address public defaultCapsuleRenderer;
+    /// CapsuleRenderer address
+    address public defaultRenderer;
 
     /// CapsuleMetadata address
     address public capsuleMetadata;
@@ -171,6 +178,9 @@ contract CapsuleToken is
 
     /// Royalty amount out of 1000
     uint256 public royalty;
+
+    /// Mapping of Capsule ID to text
+    mapping(address => bool) internal _validRenderers;
 
     /// Mapping of Capsule ID to text
     mapping(uint256 => bytes2[16][8]) internal _textOf;
@@ -228,7 +238,7 @@ contract CapsuleToken is
         requireMintPrice
         onlyMintableColor(color)
         onlyImpureColor(color)
-        onlyValidFontForRenderer(font, defaultCapsuleRenderer)
+        onlyValidFontForRenderer(font, defaultRenderer)
         nonReentrant
         returns (uint256 capsuleId)
     {
@@ -374,7 +384,7 @@ contract CapsuleToken is
     function rendererOf(uint256 capsuleId) public view returns (address) {
         if (_rendererOf[capsuleId] != address(0)) return _rendererOf[capsuleId];
 
-        return defaultCapsuleRenderer;
+        return defaultRenderer;
     }
 
     /// @notice Check if Capsule is locked.
@@ -394,6 +404,13 @@ contract CapsuleToken is
         returns (bool)
     {
         return ICapsuleRenderer(renderer).isValidFont(font);
+    }
+
+    /// @notice Check if address is a valid CapsuleRenderer contract.
+    /// @param renderer Renderer address to check.
+    /// @return true True if renderer is valid.
+    function isValidRenderer(address renderer) public view returns (bool) {
+        return _validRenderers[renderer];
     }
 
     /// @notice Check if color is valid.
@@ -504,6 +521,7 @@ contract CapsuleToken is
     function setRendererOf(uint256 capsuleId, address renderer)
         external
         onlyCapsuleOwner(capsuleId)
+        onlyValidRenderer(renderer)
     {
         _rendererOf[capsuleId] = renderer;
 
@@ -528,10 +546,12 @@ contract CapsuleToken is
 
     /// @notice Allows the owner of this contract to update the defaultCapsuleRenderer contract.
     /// @param renderer Address of new default defaultCapsuleRenderer contract.
-    function setDefaultCapsuleRenderer(address renderer) external onlyOwner {
-        defaultCapsuleRenderer = renderer;
+    function setDefaultRenderer(address renderer) external onlyOwner {
+        defaultRenderer = renderer;
 
-        emit SetDefaultCapsuleRenderer(renderer);
+        _validRenderers[renderer] = true;
+
+        emit SetDefaultRenderer(renderer);
     }
 
     /// @notice Allows the owner of this contract to update the CapsuleMetadata contract.
@@ -600,7 +620,7 @@ contract CapsuleToken is
         internal
         whenNotPaused
         onlyMintableColor(color)
-        onlyValidFontForRenderer(font, defaultCapsuleRenderer)
+        onlyValidFontForRenderer(font, defaultRenderer)
         returns (uint256 capsuleId)
     {
         _mint(to, 1, new bytes(0), false);

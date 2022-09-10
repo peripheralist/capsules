@@ -30,7 +30,7 @@ interface ICapsuleToken {
         address indexed to,
         bytes3 indexed color
     );
-    event SetDefaultCapsuleRenderer(address renderer);
+    event SetDefaultRenderer(address renderer);
     event SetCapsuleMetadata(address metadata);
     event SetFeeReceiver(address receiver);
     event SetPureColors(bytes3[] colors);
@@ -98,7 +98,7 @@ interface ICapsuleToken {
 
     function burn(uint256 capsuleId) external;
 
-    function setDefaultCapsuleRenderer(address _capsuleRenderer) external;
+    function setDefaultRenderer(address renderer) external;
 
     function isValidFontForRenderer(Font memory font, address renderer)
         external
@@ -108,6 +108,8 @@ interface ICapsuleToken {
     function isValidColor(bytes3 color) external view returns (bool);
 
     function isValidCapsuleText(uint256 capsuleId) external view returns (bool);
+
+    function isValidRenderer(address renderer) external view returns (bool);
 
     function withdraw() external;
 
