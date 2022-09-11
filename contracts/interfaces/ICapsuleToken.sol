@@ -53,10 +53,6 @@ interface ICapsuleToken {
         view
         returns (bytes3);
 
-    function stringTextOf(uint256 capsuleId)
-        external
-        returns (string[8] memory);
-
     function colorOf(uint256 capsuleId) external view returns (bytes3);
 
     function textOf(uint256 capsuleId)
@@ -96,9 +92,9 @@ interface ICapsuleToken {
 
     function setRendererOf(uint256 capsuleId, address renderer) external;
 
-    function burn(uint256 capsuleId) external;
-
     function setDefaultRenderer(address renderer) external;
+
+    function burn(uint256 capsuleId) external;
 
     function isValidFontForRenderer(Font memory font, address renderer)
         external

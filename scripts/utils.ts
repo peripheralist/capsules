@@ -18,6 +18,25 @@ export const mintPrice = ethers.utils.parseEther("0.01");
 
 export const maxSupply = 7957;
 
+export const validHexes = () => {
+  let hexes: string[] = [];
+
+  const toHex = (num: number) =>
+    BigNumber.from(num).toHexString().split("0x")[1];
+
+  for (let r = 0; r <= 255; r += 5) {
+    for (let g = 0; g <= 255; g += 5) {
+      for (let b = 0; b <= 255; b += 5) {
+        if (r === 255 || g === 255 || b === 255) {
+          hexes.push("0x" + toHex(r) + toHex(g) + toHex(b));
+        }
+      }
+    }
+  }
+
+  return hexes.filter((h) => !pureColors.includes(h));
+};
+
 // export const totalSupply = async (capsulesTokenAddress: string) =>
 //   await signingContract(capsulesTokenAddress).totalSupply();
 
@@ -43,7 +62,7 @@ export const stringToBytes32 = (str?: string) => {
   for (let i = 0; i < 16; i++) {
     let byte = "0000";
     if (str && str.length > i) {
-      byte = Buffer.from(str[i]).toString("hex").padStart(4, "0");
+      byte = str[i].charCodeAt(0).toString(16).padStart(4, "0");
     }
     bytes32 += byte;
   }
@@ -56,10 +75,10 @@ export async function skipToBlockNumber(seconds: number) {
   await ethers.provider.send("evm_mine", [seconds]);
 }
 
-export async function mintValidUnlockedCapsules(
-  capsulesToken: CapsulesToken,
+export async function mintCapsulesWithTexts(
+  capsulesToken: CapsuleToken,
   signer: Signer,
-  count?: number
+  texts: string[][]
 ) {
   let hexes: string[] = [];
 
@@ -82,23 +101,27 @@ export async function mintValidUnlockedCapsules(
 
   const validHexes = hexes.filter((h) => !pureColors.includes(h)).slice(skip);
 
-  const _count =
-    count !== undefined
-      ? Math.min(count, validHexes.length)
-      : validHexes.length;
+  const count = Math.min(texts.length, validHexes.length);
 
   const startTime = new Date().valueOf();
-  process.stdout.write(`Minting Capsules... 0/${_count}`);
+  process.stdout.write(`Minting Capsules... 0/${count}`);
 
-  for (let i = 0; i < _count; i++) {
+  for (let i = 0; i < count; i++) {
     await capsules
-      .mint(validHexes[i], 400, {
-        value: mintPrice,
-        gasLimit: 30000000,
-      })
+      .mintWithText(
+        validHexes[i],
+        {
+          weight: 400,
+          style: "normal",
+        },
+        stringTextToBytesText(texts[i]),
+        {
+          value: mintPrice,
+        }
+      )
       .then(() => {
         process.stdout.cursorTo(11);
-        process.stdout.write(`${i + 1}/${_count}`);
+        process.stdout.write(`${i + 1}/${count}`);
       });
   }
 
@@ -108,10 +131,25 @@ export async function mintValidUnlockedCapsules(
 }
 
 export async function wallets() {
-  const [deployer, owner, feeReceiver, minter1, minter2, renderer2] =
-    await ethers.getSigners();
+  const [
+    deployer,
+    owner,
+    feeReceiver,
+    newFeeReceiver,
+    minter1,
+    minter2,
+    renderer2,
+  ] = await ethers.getSigners();
 
-  return { deployer, owner, feeReceiver, minter1, minter2, renderer2 };
+  return {
+    deployer,
+    owner,
+    feeReceiver,
+    newFeeReceiver,
+    minter1,
+    minter2,
+    renderer2,
+  };
 }
 
 export async function deployCapsulesTypeface(capsuleTokenAddress: string) {

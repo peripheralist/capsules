@@ -288,8 +288,8 @@ contract CapsuleRenderer is ICapsuleRenderer {
     }
 
     /// @notice Check if text is valid.
-    /// @dev Text is valid if every bytes is supported by CapsulesTypeface, or is 0x00.
-    /// @param text UTF8-encoded text bytes to check validity of.
+    /// @dev Text is valid if every unicode is supported by CapsulesTypeface, or is 0x00.
+    /// @param text Text to check validity of.
     /// @return true True if text is valid.
     function isValidText(bytes32[8] memory text) public view returns (bool) {
         unchecked {

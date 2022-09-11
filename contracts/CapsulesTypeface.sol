@@ -29,7 +29,7 @@ contract CapsulesTypeface is Typeface {
 
     function supportsCodePoint(bytes3 cp) external pure returns (bool) {
         // Optimize gas by first checking outer bounds of byte ranges
-        if (cp < 0x000020 || cp > 0x00e069) return false;
+        if (cp < 0x000020 || cp > 0x00e421) return false;
 
         return ((cp >= 0x000020 && cp <= 0x00007e) ||
             (cp >= 0x0000a0 && cp <= 0x0000a8) ||
@@ -130,7 +130,8 @@ contract CapsulesTypeface is Typeface {
             cp == 0x00a730 ||
             cp == 0x00a7af ||
             (cp >= 0x00e000 && cp <= 0x00e02b) ||
-            cp == 0x00e069);
+            cp == 0x00e069 ||
+            (cp >= 0x00e420 && cp <= 0x00e421));
     }
 
     /// @notice Mint pure color Capsule token to sender when sender sets font source.

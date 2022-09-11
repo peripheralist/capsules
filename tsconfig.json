@@ -7,6 +7,6 @@
     "outDir": "dist",
     "resolveJsonModule": true
   },
-  "include": ["./scripts", "./test", "./typechain-types", "fonts.ts", "pureColors.ts"],
+  "include": ["./scripts", "./test", "./typechain-types", "fonts.ts", "unicodes.ts", "pureColors.ts"],
   "files": ["./hardhat.config.ts"]
 }
