@@ -17,8 +17,8 @@ import "./interfaces/ICapsuleToken.sol";
 import "./utils/Base64.sol";
 
 struct SvgSpecs {
-    // Capsule color formatted as RGB hex color code
-    bytes hexColor;
+    // Color code for SVG fill property
+    string fill;
     // ID for row elements used on top and bottom edges of svg.
     bytes edgeRowId;
     // ID for row elements placed behind text rows.
@@ -151,7 +151,7 @@ contract CapsuleRenderer is ICapsuleRenderer {
         bytes memory contentArea;
         {
             // Create <g> element and define color of dots and text.
-            contentArea = abi.encodePacked('<g fill="#', specs.hexColor, '"');
+            contentArea = abi.encodePacked('<g fill="', specs.fill, '"');
 
             // If square image, translate contentArea group to center of svg viewbox
             if (square) {
@@ -229,7 +229,7 @@ contract CapsuleRenderer is ICapsuleRenderer {
                     '" class="capsules-',
                     Strings.toString(capsule.font.weight),
                     '">',
-                    _stringLine(capsule.text[i], true),
+                    _toUnicodeString(capsule.text[i]),
                     "</text>"
                 );
             }
@@ -324,17 +324,41 @@ contract CapsuleRenderer is ICapsuleRenderer {
     {
         defaultText[0] = bytes32(
             abi.encodePacked(
-                bytes2("C"),
-                bytes2("A"),
-                bytes2("P"),
-                bytes2("S"),
-                bytes2("U"),
-                bytes2("L"),
-                bytes2("E")
+                bytes1(0),
+                bytes1("C"),
+                bytes1(0),
+                bytes1("A"),
+                bytes1(0),
+                bytes1("P"),
+                bytes1(0),
+                bytes1("S"),
+                bytes1(0),
+                bytes1("U"),
+                bytes1(0),
+                bytes1("L"),
+                bytes1(0),
+                bytes1("E")
             )
         );
-        bytes memory _color = _bytes3ToHexChars(color);
-        defaultText[1] = bytes32(abi.encodePacked(bytes2("#"), _color));
+        bytes memory _color = bytes(_bytes3ToColorCode(color));
+        defaultText[1] = bytes32(
+            abi.encodePacked(
+                bytes1(0),
+                bytes1(_color[0]),
+                bytes1(0),
+                bytes1(_color[1]),
+                bytes1(0),
+                bytes1(_color[2]),
+                bytes1(0),
+                bytes1(_color[3]),
+                bytes1(0),
+                bytes1(_color[4]),
+                bytes1(0),
+                bytes1(_color[5]),
+                bytes1(0),
+                bytes1(_color[6])
+            )
+        );
     }
 
     /// @notice Calculate specs used to build SVG for capsule. The SvgSpecs struct allows using memory more efficiently when constructing a SVG for a Capsule.
@@ -359,10 +383,8 @@ contract CapsuleRenderer is ICapsuleRenderer {
         for (uint256 i; i < linesCount; i++) {
             // Reverse iterate over line
             bytes2[16] memory line = _bytes32ToBytes2Array(capsule.text[i]);
-            for (uint256 j = 16; j > 0; j--) {
-                if (line[j - 1] != 0 && j > charWidth) {
-                    charWidth = j;
-                }
+            for (uint256 j = 16; j > charWidth; j--) {
+                if (line[j - 1] != 0) charWidth = j;
             }
         }
 
@@ -381,7 +403,7 @@ contract CapsuleRenderer is ICapsuleRenderer {
 
         return
             SvgSpecs({
-                hexColor: _bytes3ToHexChars(capsule.color),
+                fill: _bytes3ToColorCode(capsule.color),
                 edgeRowId: edgeRowId,
                 textRowId: abi.encodePacked(
                     "textRow",
@@ -434,43 +456,31 @@ contract CapsuleRenderer is ICapsuleRenderer {
         returns (string[8] memory _stringText)
     {
         for (uint256 i; i < 8; i++) {
-            _stringText[i] = _stringLine(text[i], false);
+            _stringText[i] = _toUnicodeString(text[i]);
         }
     }
 
     /// @notice Returns line of text formatted as a readable string.
     /// @dev Iterates through each byte in line of text and replaces each byte as needed to create a string that will render in html without issue. Ensures that no illegal characters or 0x00 bytes remain. Non-trailing 0x00 bytes are converted to spaces, trailing 0x00 bytes are trimmed.
     /// @param line Line of text to format.
-    /// @param htmlSafe Replace special characters with html-safe codes.
-    /// @return stringLine Text string that can be safely rendered in html.
-    function _stringLine(bytes32 line, bool htmlSafe)
+    /// @return unicodeString Text string that can be safely rendered in html.
+    function _toUnicodeString(bytes32 line)
         internal
         pure
-        returns (string memory stringLine)
+        returns (string memory unicodeString)
     {
         bytes2[16] memory arr = _bytes32ToBytes2Array(line);
 
-        // Build bytes in reverse to more easily trim trailing whitespace
-        for (uint256 i = 16; i > 0; i--) {
-            bytes2 char = arr[i - 1];
+        for (uint256 i; i < 16; i++) {
+            bytes2 char = arr[i];
 
-            // 0x0 bytes should not be rendered.
+            // 0 bytes cannot be rendered
             if (char == 0) continue;
 
-            // Some bytes cannot render in SVG text, so we replace them with their "&"-prefixed html name code.
-            if (htmlSafe && char == 0x003c) {
-                // Replace `<`
-                stringLine = string.concat("&lt;", stringLine);
-            } else if (htmlSafe && char == 0x003E) {
-                // Replace `>`
-                stringLine = string.concat("&gt;", stringLine);
-            } else if (htmlSafe && char == 0x0026) {
-                // Replace `&`
-                stringLine = string.concat("&amp;", stringLine);
-            } else if (char != 0) {
-                // Add char if not bytes2(0)
-                stringLine = string(abi.encodePacked(char, stringLine));
-            }
+            unicodeString = string.concat(
+                unicodeString,
+                _bytes2ToUnicodeString(char)
+            );
         }
     }
 
@@ -487,38 +497,30 @@ contract CapsuleRenderer is ICapsuleRenderer {
         }
     }
 
-    /// @notice Format bytes3 type to 6 hexadecimal ascii bytes
-    /// @param b bytes3 value to convert to hex characters
-    /// @return o hex character bytes
-    function _bytes3ToHexChars(bytes3 b)
+    /// @notice Format bytes3 type as html hex color code.
+    /// @param b bytes3 value representing hex-encoded RGB color.
+    /// @return o Formatted color code string.
+    function _bytes3ToColorCode(bytes3 b)
         internal
         pure
-        returns (bytes memory o)
+        returns (string memory o)
     {
-        uint24 i = uint24(b);
-        o = new bytes(6);
-        uint24 mask = 0x00000f;
-        o[5] = _uint8toByte(uint8(i & mask));
-        i = i >> 4;
-        o[4] = _uint8toByte(uint8(i & mask));
-        i = i >> 4;
-        o[3] = _uint8toByte(uint8(i & mask));
-        i = i >> 4;
-        o[2] = _uint8toByte(uint8(i & mask));
-        i = i >> 4;
-        o[1] = _uint8toByte(uint8(i & mask));
-        i = i >> 4;
-        o[0] = _uint8toByte(uint8(i & mask));
+        bytes memory hexCode = bytes(Strings.toHexString(uint24(b)));
+        o = "#";
+        // Trim leading 0x from hexCode
+        for (uint256 i = 0; i < 6; i++) {
+            o = string.concat(o, string(abi.encodePacked(hexCode[i + 2])));
+        }
     }
 
-    /// @notice Convert uint8 type to ascii byte
-    /// @param i uint8 value to convert to ascii byte
-    /// @return b ascii byte
-    function _uint8toByte(uint8 i) internal pure returns (bytes1 b) {
-        uint8 _i = (i > 9)
-            ? (i + 87) // ascii a-f
-            : (i + 48); // ascii 0-9
-
-        b = bytes1(_i);
+    /// @notice Format bytes2 type as decimal unicode string for html.
+    /// @param b bytes2 value representing hex unicode.
+    /// @return unicode Formatted decimal unicode string.
+    function _bytes2ToUnicodeString(bytes2 b)
+        internal
+        pure
+        returns (string memory)
+    {
+        return string.concat("&#", Strings.toString(uint16(b)), ";");
     }
 }

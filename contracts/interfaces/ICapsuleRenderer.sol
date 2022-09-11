@@ -21,15 +21,7 @@ interface ICapsuleRenderer {
         view
         returns (string memory);
 
-    function stringText(bytes32[8] memory)
-        external
-        view
-        returns (string[8] memory);
-
     function isValidFont(Font memory font) external view returns (bool);
 
-    function isValidText(bytes32[8] memory line)
-        external
-        view
-        returns (bool);
+    function isValidText(bytes32[8] memory line) external view returns (bool);
 }

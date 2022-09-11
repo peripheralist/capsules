@@ -61,7 +61,7 @@ describe("Capsules", async () => {
     capsuleToken = _capsuleToken;
   });
 
-  describe("Deployment", async () => {
+  describe.only("Deployment", async () => {
     it("Deploy should set owner, fee receiver, and contract addresses", async () => {
       const { owner, feeReceiver } = await wallets();
 
@@ -95,7 +95,15 @@ describe("Capsules", async () => {
   });
 
   describe("Initialize", async () => {
-    it("Valid setSource while paused should revert", async () => {
+    it.only("Valid setSource while paused should revert", async () => {
+      // console.log("asdf", await capsuleRenderer.bytes3ToColorCode("0xffff00"));
+      console.log("asdf", await capsuleRenderer.test());
+      // console.log(
+      //   "asdf",
+      //   await capsuleRenderer.bytes2ToUnicodeString("0xe041")
+      // );
+      return;
+
       const { owner } = await wallets();
 
       const ownerCapsulesTypeface = signingContract(capsulesTypeface, owner);

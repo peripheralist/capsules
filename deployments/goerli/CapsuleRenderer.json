@@ -1,5 +1,5 @@
 {
-      "address": "0xcC23fb5126B5977b301e4c79792CF19AE3D6B592", 
+      "address": "0x95A26D8294e68ED33E0E34fbDCbE2Ab90079Ee0d", 
       "abi": [
   {
     "inputs": [
@@ -11,6 +11,44 @@
     ],
     "stateMutability": "nonpayable",
     "type": "constructor"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes2",
+        "name": "b",
+        "type": "bytes2"
+      }
+    ],
+    "name": "bytes2ToUnicodeString",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes3",
+        "name": "b",
+        "type": "bytes3"
+      }
+    ],
+    "name": "bytes3ToColorCode",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "o",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "pure",
+    "type": "function"
   },
   {
     "inputs": [],
@@ -223,6 +261,19 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "test",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "pure",
     "type": "function"
   },
   {

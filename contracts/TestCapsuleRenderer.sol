@@ -16,7 +16,8 @@ import "./interfaces/ICapsuleRenderer.sol";
 import "./interfaces/ICapsuleToken.sol";
 import "./utils/Base64.sol";
 
-contract TestCapsuleRenderer is ICapsuleRenderer {
+contract TestCapsuleRenderer {
+    // contract TestCapsuleRenderer is ICapsuleRenderer {
     constructor() {}
 
     /// @notice Return Base64-encoded square SVG for Capsule
