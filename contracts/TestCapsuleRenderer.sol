@@ -8,7 +8,7 @@
   @notice Empty CapsuleRenderer for testing.
  */
 
-pragma solidity 0.8.14;
+pragma solidity ^0.8.12;
 
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "./interfaces/ITypeface.sol";

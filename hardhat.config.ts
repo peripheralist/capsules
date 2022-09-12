@@ -58,7 +58,7 @@ module.exports = {
     mainnet: {
       url: "https://mainnet.infura.io/v3/" + infuraId,
       accounts: [deployerPk()],
-      gasPrice: 110000000000,
+      gasPrice: 10e9,
     },
   },
   etherscan: {
@@ -71,7 +71,7 @@ module.exports = {
     },
   },
   solidity: {
-    version: "0.8.4",
+    version: "0.8.12",
     settings: {
       optimizer: {
         enabled: true,

@@ -8,7 +8,7 @@
   @notice Interface for CapsuleToken contract
  */
 
-pragma solidity ^0.8.4;
+pragma solidity ^0.8.8;
 
 import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";

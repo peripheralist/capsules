@@ -14,7 +14,7 @@
   To avoid high gas costs, text isn't validated when minting or editing, meaning Capsule text could contain characters that are unsupported by the Capsules Typeface. Instead, we rely on the Renderer contract to render a safe image even if the Capsule text is invalid.
  */
 
-pragma solidity ^0.8.4;
+pragma solidity ^0.8.8;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/interfaces/IERC2981.sol";
