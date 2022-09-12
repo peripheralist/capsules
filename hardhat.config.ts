@@ -71,7 +71,7 @@ module.exports = {
     },
   },
   solidity: {
-    version: "0.8.14",
+    version: "0.8.4",
     settings: {
       optimizer: {
         enabled: true,
@@ -100,7 +100,7 @@ module.exports = {
   },
   gasReporter: {
     currency: "USD",
-    gasPrice: 10,
+    gasPrice: 7,
     coinmarketcap: "cde088de-a8a7-493c-84d8-e9ecd6fac3a9",
   },
 };

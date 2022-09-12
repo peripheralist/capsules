@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 import "./interfaces/ITypeface.sol";
 
 /**
@@ -17,14 +18,14 @@ import "./interfaces/ITypeface.sol";
   Fonts are identified by the Font struct, which includes "style" and "weight" properties.
  */
 
-abstract contract Typeface is ITypeface {
+abstract contract Typeface is ITypeface, ERC165 {
     /// @notice Mapping of weight => style => font source data as bytes.
     mapping(uint256 => mapping(string => bytes)) private _source;
 
     /// @notice Mapping of weight => style => keccack256 hash of font source data as bytes.
     mapping(uint256 => mapping(string => bytes32)) private _sourceHash;
 
-    /// @notice Mapping of weight => style => true if font source has been stored. 
+    /// @notice Mapping of weight => style => true if font source has been stored.
     /// @dev This serves as a gas-efficient way to check if a font source has been stored without getting the entire source data.
     mapping(uint256 => mapping(string => bool)) private _hasSource;
 
@@ -114,6 +115,19 @@ abstract contract Typeface is ITypeface {
 
     constructor(string memory __name) {
         _name = __name;
+    }
+
+    /// @dev See {IERC165-supportsInterface}.
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        virtual
+        override(ERC165)
+        returns (bool)
+    {
+        return
+            interfaceId == type(ITypeface).interfaceId ||
+            super.supportsInterface(interfaceId);
     }
 
     /// @notice Function called before setSource() is called.

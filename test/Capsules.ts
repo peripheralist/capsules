@@ -174,28 +174,29 @@ describe("Capsules", async () => {
     it("Should store first font and mint Capsule token", async () => {
       const { owner } = await wallets();
 
-      // const _fonts = Object.keys(FONTS).map((weight) => ({
-      //   weight: parseInt(weight) as keyof typeof FONTS,
-      //   style: "normal",
-      // }));
+      const _fonts = Object.keys(FONTS).map((weight) => ({
+        weight: parseInt(weight) as keyof typeof FONTS,
+        style: "normal",
+      }));
 
-      // console.log("Estimating gas to store fonts...");
-      // // Estimate gas to store all fonts
-      // for (let i = 0; i < _fonts.length; i++) {
-      //   const weight = _fonts[i].weight;
+      const gwei = 10;
+      console.log(`Estimating gas to store fonts at ${gwei} GWEI...`);
+      // Estimate gas to store all fonts
+      for (let i = 0; i < _fonts.length; i++) {
+        const weight = _fonts[i].weight;
 
-      //   const gas = await capsulesTypeface.estimateGas.setSource(
-      //     _fonts[i],
-      //     Buffer.from(FONTS[weight])
-      //   );
+        const gas = await capsulesTypeface.estimateGas.setSource(
+          _fonts[i],
+          Buffer.from(FONTS[weight])
+        );
 
-      //   console.log(
-      //     weight,
-      //     "=> " +
-      //       (gas.toNumber() * 20 * 1e-9).toString().substring(0, 6) +
-      //       "ETH" // 20 gwei
-      //   );
-      // }
+        console.log(
+          weight,
+          "=> " +
+            (gas.toNumber() * gwei * 1e-9).toString().substring(0, 6) +
+            "ETH" // 20 gwei
+        );
+      }
 
       // Store first font
       const tx = store400(owner);

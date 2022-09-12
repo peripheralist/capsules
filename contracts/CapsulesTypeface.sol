@@ -8,7 +8,7 @@
   @notice Capsules Typeface stored on-chain using the Typeface contract. 7 "normal" fonts are supported, with weights 100-700. All characters require 2 or less bytes to encode.
  */
 
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.4;
 
 import "./interfaces/ICapsuleToken.sol";
 import "./Typeface.sol";

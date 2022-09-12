@@ -8,7 +8,7 @@
   @notice Interface for CapsuleMetadata contract
  */
 
-pragma solidity ^0.8.13;
+pragma solidity ^0.8.4;
 
 import "./ICapsuleToken.sol";
 

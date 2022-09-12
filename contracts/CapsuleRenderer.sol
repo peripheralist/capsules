@@ -8,7 +8,7 @@
   @notice Renders SVG images for Capsules tokens.
  */
 
-pragma solidity 0.8.14;
+pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "./interfaces/ITypeface.sol";
