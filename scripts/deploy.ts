@@ -11,9 +11,10 @@ import {
 } from "./utils";
 
 const network = process.env.HARDHAT_NETWORK;
-const ownerAddress = "0x63A2368F4B509438ca90186cb1C15156713D5834";
-const feeReceiverAddress = "0x63A2368F4B509438ca90186cb1C15156713D5834";
+const ownerAddress = "0x817738DC393d682Ca5fBb268707b99F2aAe96baE";
+const feeReceiverAddress = "0x817738DC393d682Ca5fBb268707b99F2aAe96baE";
 // 0x817738DC393d682Ca5fBb268707b99F2aAe96baE
+// 0x63A2368F4B509438ca90186cb1C15156713D5834
 
 const getDeployer = async () => (await ethers.getSigners())[0];
 

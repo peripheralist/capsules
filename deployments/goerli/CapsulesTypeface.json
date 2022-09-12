@@ -1,5 +1,5 @@
 {
-      "address": "0xee63Ec9b593821529757B423221A94A696ab6EB4", 
+      "address": "0xF353C02954e6162Af745d8aB52df121279B30C29", 
       "abi": [
   {
     "inputs": [
@@ -256,6 +256,25 @@
       }
     ],
     "stateMutability": "pure",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes4",
+        "name": "interfaceId",
+        "type": "bytes4"
+      }
+    ],
+    "name": "supportsInterface",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   }
 ]
