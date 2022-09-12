@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0
 
 /**
-  @title Capsules Metadata
+  @title CapsuleMetadata
 
   @author peri
 
-  @notice Renders metadata for Capsules tokens.
+  @notice Renders metadata for Capsule tokens.
  */
 
 pragma solidity 0.8.14;

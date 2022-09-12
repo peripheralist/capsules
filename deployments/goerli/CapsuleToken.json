@@ -1,5 +1,5 @@
 {
-      "address": "0xeE95B4c75f2AB5108e69E8818Ae3eed0295d7cF7", 
+      "address": "0x02972A2851c3e673D929004141a224BF54f09bD6", 
       "abi": [
   {
     "inputs": [
@@ -1316,25 +1316,6 @@
     "name": "setRoyalty",
     "outputs": [],
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "capsuleId",
-        "type": "uint256"
-      }
-    ],
-    "name": "stringTextOf",
-    "outputs": [
-      {
-        "internalType": "string[8]",
-        "name": "",
-        "type": "string[8]"
-      }
-    ],
-    "stateMutability": "view",
     "type": "function"
   },
   {

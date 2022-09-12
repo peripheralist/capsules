@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 /**
-  @title Capsules Renderer
+  @title CapsuleRenderer
 
   @author peri
 
@@ -295,16 +295,18 @@ contract CapsuleRenderer is ICapsuleRenderer {
         unchecked {
             for (uint256 i; i < 8; i++) {
                 bytes2[16] memory line = _bytes32ToBytes2Array(text[i]);
+
                 for (uint256 j; j < 16; j++) {
                     bytes2 char = line[j];
 
-                    // return false if any single character is unsupported
                     if (
+                        char != 0 &&
                         !ITypeface(capsulesTypeface).supportsCodePoint(
-                            // convert to bytes3 by adding 0x00 padding to left side
+                            // convert to bytes3 by adding 0 byte padding to left side
                             bytes3(abi.encodePacked(bytes1(0), char))
-                        ) && char != 0
+                        )
                     ) {
+                        // return false if any single character is unsupported
                         return false;
                     }
                 }
@@ -325,38 +327,38 @@ contract CapsuleRenderer is ICapsuleRenderer {
         defaultText[0] = bytes32(
             abi.encodePacked(
                 bytes1(0),
-                bytes1("C"),
+                "C",
                 bytes1(0),
-                bytes1("A"),
+                "A",
                 bytes1(0),
-                bytes1("P"),
+                "P",
                 bytes1(0),
-                bytes1("S"),
+                "S",
                 bytes1(0),
-                bytes1("U"),
+                "U",
                 bytes1(0),
-                bytes1("L"),
+                "L",
                 bytes1(0),
-                bytes1("E")
+                "E"
             )
         );
         bytes memory _color = bytes(_bytes3ToColorCode(color));
         defaultText[1] = bytes32(
             abi.encodePacked(
                 bytes1(0),
-                bytes1(_color[0]),
+                _color[0],
                 bytes1(0),
-                bytes1(_color[1]),
+                _color[1],
                 bytes1(0),
-                bytes1(_color[2]),
+                _color[2],
                 bytes1(0),
-                bytes1(_color[3]),
+                _color[3],
                 bytes1(0),
-                bytes1(_color[4]),
+                _color[4],
                 bytes1(0),
-                bytes1(_color[5]),
+                _color[5],
                 bytes1(0),
-                bytes1(_color[6])
+                _color[6]
             )
         );
     }

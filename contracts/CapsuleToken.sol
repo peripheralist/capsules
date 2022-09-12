@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 
 /**
-  @title Capsules Token
+  @title CapsuleToken
 
   @author peri
 
@@ -34,15 +34,15 @@ import "./interfaces/ITypeface.sol";
 /*              000   0   0  0      0000    000   00000  00000  0000              */
 /*                                                                                */
 
-error ValueBelowMintPrice();
-error InvalidFontForRenderer(address renderer);
-error InvalidColor();
-error InvalidRenderer();
-error PureColorNotAllowed();
-error NotCapsulesTypeface();
-error ColorAlreadyMinted(uint256 capsuleId);
-error NotCapsuleOwner(address owner);
 error CapsuleLocked();
+error ColorAlreadyMinted(uint256 capsuleId);
+error InvalidColor();
+error InvalidFontForRenderer(address renderer);
+error InvalidRenderer();
+error NotCapsuleOwner(address owner);
+error NotCapsulesTypeface();
+error PureColorNotAllowed();
+error ValueBelowMintPrice();
 
 contract CapsuleToken is
     ICapsuleToken,
