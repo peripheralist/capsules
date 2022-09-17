@@ -25,7 +25,7 @@ contract CapsulesTypeface is TypefaceExpandable {
         bytes32[] memory hashes,
         address _capsuleToken,
         address operator
-    ) TypefaceExpandable("Capsules", operator) {
+    ) TypefaceExpandable("Capsules", operator, operator) {
         _setFontSourceHashes(fonts, hashes);
 
         capsuleToken = ICapsuleToken(_capsuleToken);
@@ -117,13 +117,16 @@ contract CapsulesTypeface is TypefaceExpandable {
             (cp >= 0x0021ba && cp <= 0x0021bb) ||
             cp == 0x002206 ||
             cp == 0x00220f ||
-            (cp >= 0x002211 && cp <= 0x002212) ||
+            (cp >= 0x002211 && cp <= 0x002214) ||
             cp == 0x00221a ||
             cp == 0x00221e ||
             cp == 0x00222b ||
+            cp == 0x002238 ||
+            cp == 0x002243 ||
             cp == 0x002248 ||
+            (cp >= 0x002254 && cp <= 0x002255) ||
             cp == 0x002260 ||
-            (cp >= 0x002264 && cp <= 0x002265) ||
+            (cp >= 0x002264 && cp <= 0x002267) ||
             (cp >= 0x00229e && cp <= 0x0022a1) ||
             cp == 0x0022c8 ||
             (cp >= 0x002302 && cp <= 0x002304) ||
@@ -173,6 +176,12 @@ contract CapsulesTypeface is TypefaceExpandable {
             cp == 0x002795 ||
             cp == 0x002797 ||
             (cp >= 0x0029d1 && cp <= 0x0029d5) ||
+            cp == 0x0029fa ||
+            cp == 0x002a25 ||
+            (cp >= 0x002a2a && cp <= 0x002a2c) ||
+            (cp >= 0x002a71 && cp <= 0x002a72) ||
+            cp == 0x002a75 ||
+            (cp >= 0x002a99 && cp <= 0x002a9a) ||
             (cp >= 0x002b05 && cp <= 0x002b0d) ||
             (cp >= 0x002b16 && cp <= 0x002b19) ||
             (cp >= 0x002b90 && cp <= 0x002b91) ||

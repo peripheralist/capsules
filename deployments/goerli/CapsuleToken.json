@@ -1,5 +1,5 @@
 {
-      "address": "0xc8DeC5bC41ec3935CA81675de8a24b9b79f0d1a7", 
+      "address": "0xE5eC9b6bb2f14C05A3f6d8FEb21809E2ECC491f0", 
       "abi": [
   {
     "inputs": [
@@ -105,6 +105,11 @@
     "type": "error"
   },
   {
+    "inputs": [],
+    "name": "NoGiftAvailable",
+    "type": "error"
+  },
+  {
     "inputs": [
       {
         "internalType": "address",
@@ -159,6 +164,19 @@
     "anonymous": false,
     "inputs": [
       {
+        "indexed": false,
+        "internalType": "address",
+        "name": "renderer",
+        "type": "address"
+      }
+    ],
+    "name": "AddValidRenderer",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
         "indexed": true,
         "internalType": "address",
         "name": "owner",
@@ -203,12 +221,6 @@
       }
     ],
     "name": "ApprovalForAll",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [],
-    "name": "LockRenderer",
     "type": "event"
   },
   {
@@ -258,6 +270,19 @@
       }
     ],
     "name": "MintCapsule",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "minter",
+        "type": "address"
+      }
+    ],
+    "name": "MintGift",
     "type": "event"
   },
   {
@@ -393,6 +418,25 @@
       {
         "indexed": false,
         "internalType": "address",
+        "name": "_address",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "count",
+        "type": "uint256"
+      }
+    ],
+    "name": "SetGiftCount",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
         "name": "metadata",
         "type": "address"
       }
@@ -494,6 +538,19 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "renderer",
+        "type": "address"
+      }
+    ],
+    "name": "addValidRenderer",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -729,6 +786,25 @@
     "inputs": [
       {
         "internalType": "address",
+        "name": "a",
+        "type": "address"
+      }
+    ],
+    "name": "giftCountOf",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
         "name": "owner",
         "type": "address"
       },
@@ -900,6 +976,93 @@
       }
     ],
     "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "to",
+        "type": "address"
+      },
+      {
+        "internalType": "bytes3",
+        "name": "color",
+        "type": "bytes3"
+      },
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "weight",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "style",
+            "type": "string"
+          }
+        ],
+        "internalType": "struct Font",
+        "name": "font",
+        "type": "tuple"
+      },
+      {
+        "internalType": "bytes32[8]",
+        "name": "text",
+        "type": "bytes32[8]"
+      }
+    ],
+    "name": "mintAsOwner",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes3",
+        "name": "color",
+        "type": "bytes3"
+      },
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "weight",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "style",
+            "type": "string"
+          }
+        ],
+        "internalType": "struct Font",
+        "name": "font",
+        "type": "tuple"
+      },
+      {
+        "internalType": "bytes32[8]",
+        "name": "text",
+        "type": "bytes32[8]"
+      }
+    ],
+    "name": "mintGift",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "capsuleId",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -1224,6 +1387,24 @@
       }
     ],
     "name": "setFont",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "addresses",
+        "type": "address[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "counts",
+        "type": "uint256[]"
+      }
+    ],
+    "name": "setGiftCounts",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

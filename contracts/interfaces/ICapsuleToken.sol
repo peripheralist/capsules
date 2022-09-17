@@ -32,6 +32,7 @@ interface ICapsuleToken {
         Font font,
         bytes32[8] text
     );
+    event MintGift(address minter);
     event SetDefaultRenderer(address renderer);
     event SetFeeReceiver(address receiver);
     event SetMetadata(address metadata);
@@ -40,6 +41,7 @@ interface ICapsuleToken {
     event SetCapsuleFont(uint256 indexed id, Font font);
     event SetCapsuleRenderer(uint256 indexed id, address renderer);
     event SetCapsuleText(uint256 indexed id, bytes32[8] text);
+    event SetGiftCount(address _address, uint256 count);
     event Withdraw(address to, uint256 amount);
 
     function capsuleOf(uint256 capsuleId)
@@ -69,6 +71,18 @@ interface ICapsuleToken {
     function mintPureColorForFont(address to, Font calldata font)
         external
         returns (uint256);
+
+    function mintAsOwner(
+        address to,
+        bytes3 color,
+        Font calldata font,
+        bytes32[8] calldata text
+    ) external payable returns (uint256);
+
+    function setGiftCounts(
+        address[] calldata addresses,
+        uint256[] calldata counts
+    ) external;
 
     function setTextAndFont(
         uint256 capsuleId,

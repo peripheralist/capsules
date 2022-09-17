@@ -25,6 +25,10 @@ interface ITypeface {
     /// @param sourceHash The source hash that was set.
     event SetSourceHash(Font font, bytes32 sourceHash);
 
+    /// @notice Emitted when the donation address is set.
+    /// @param donationAddress New donation address.
+    event SetDonationAddress(address donationAddress);
+
     /// @notice Returns the typeface name.
     function name() external view returns (string memory);
 
@@ -48,4 +52,12 @@ interface ITypeface {
     /// @param font Font to store source data for.
     /// @param source Source data of font.
     function setSource(Font memory font, bytes memory source) external;
+
+    /// @notice Sets a new donation address.
+    /// @param donationAddress New donation address.
+    function setDonationAddress(address donationAddress) external;
+
+    /// @notice Returns donation address
+    /// @return donationAddress Donation address.
+    function donationAddress() external view returns (address);
 }

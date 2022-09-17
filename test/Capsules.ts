@@ -90,7 +90,7 @@ describe("Capsules", async () => {
       await deployContracts();
     });
 
-    it("Deploy should set owner, fee receiver, and contract addresses", async () => {
+    it("Deploy should set owner, fee receiver, donation address, and contract addresses", async () => {
       const { owner, feeReceiver } = await wallets();
 
       expect(await capsuleToken.owner()).to.equal(owner.address);
@@ -102,6 +102,10 @@ describe("Capsules", async () => {
       expect(await capsulesTypeface.capsuleToken()).to.equal(
         capsuleToken.address
       );
+
+      expect(await capsulesTypeface.operator()).to.equal(owner.address);
+
+      expect(await capsulesTypeface.donationAddress()).to.equal(owner.address);
 
       expect(await capsuleRenderer.capsulesTypeface()).to.equal(
         capsulesTypeface.address
@@ -338,7 +342,7 @@ describe("Capsules", async () => {
       ).to.be.revertedWith("PureColorNotAllowed()");
     });
 
-    it("Mint with valid color and invalid text should succeed", async () => {
+    it("Mint with valid color and text should succeed", async () => {
       const { minter1 } = await wallets();
 
       await signingContract(capsuleToken, minter1).mint(
@@ -400,6 +404,82 @@ describe("Capsules", async () => {
     });
   });
 
+  describe("Gifts", async () => {
+    before(async () => {
+      const { owner } = await wallets();
+
+      await deployContracts();
+      await unpause();
+      await store400(owner);
+    });
+
+    it("Set gift counts should fail for non-owner", async () => {
+      const { minter1 } = await wallets();
+
+      return expect(
+        signingContract(capsuleToken, minter1).setGiftCounts(
+          [minter1.address],
+          [1]
+        )
+      ).to.be.revertedWith("Ownable: caller is not the owner");
+    });
+
+    it("Set gift counts should succeed for owner", async () => {
+      const { minter1, owner } = await wallets();
+
+      const tx = await signingContract(capsuleToken, owner).setGiftCounts(
+        [minter1.address],
+        [1]
+      );
+
+      await expect(tx)
+        .to.emit(capsuleToken, "SetGiftCount")
+        .withArgs(minter1.address, 1);
+
+      expect(await capsuleToken.giftCountOf(minter1.address)).to.equal(1);
+    });
+
+    it("Mint gift should revert if no gift available", async () => {
+      const { minter2 } = await wallets();
+
+      await expect(
+        signingContract(capsuleToken, minter2).mintGift(
+          "0x0005ff",
+          {
+            weight: 400,
+            style: "normal",
+          },
+          emptyNote
+        )
+      ).to.be.revertedWith("NoGiftAvailable");
+    });
+
+    it("Mint gift should succeed if no gift available", async () => {
+      const { minter1 } = await wallets();
+
+      const initialGiftCount = await capsuleToken.giftCountOf(minter1.address);
+
+      const tx = signingContract(capsuleToken, minter1).mintGift(
+        "0x0005ff",
+        {
+          weight: 400,
+          style: "normal",
+        },
+        emptyNote
+      );
+
+      expect(tx).to.emit(capsuleToken, "MintGift").withArgs(minter1.address);
+
+      expect(tx)
+        .to.emit(capsuleToken, "MintCapsule")
+        .withArgs(2, minter1.address, "0x0005ff", [400, "normal"], emptyNote);
+
+      await expect(
+        (await capsuleToken.giftCountOf(minter1.address)).toNumber()
+      ).to.equal(initialGiftCount.toNumber() - 1);
+    });
+  });
+
   describe("Capsule owner", async () => {
     before(async () => {
       const { minter1 } = await wallets();
@@ -407,6 +487,62 @@ describe("Capsules", async () => {
       await deployContracts();
       await unpause();
       await store400(minter1);
+    });
+
+    it("Owner mint should fail if not owner", async () => {
+      const { minter1 } = await wallets();
+
+      return expect(
+        signingContract(capsuleToken, minter1).mintAsOwner(
+          minter1.address,
+          "0x0005ff",
+          {
+            weight: 400,
+            style: "normal",
+          },
+          emptyNote
+        )
+      ).to.be.revertedWith("Ownable: caller is not the owner");
+    });
+
+    it("Owner mint should succeed while paused if owner", async () => {
+      const { owner } = await wallets();
+
+      await signingContract(capsuleToken, owner).pause();
+
+      await expect(
+        signingContract(capsuleToken, owner).mintAsOwner(
+          owner.address,
+          "0x0005ff",
+          {
+            weight: 400,
+            style: "normal",
+          },
+          emptyNote
+        )
+      )
+        .to.emit(capsuleToken, "MintCapsule")
+        .withArgs(2, owner.address, "0x0005ff", [400, "normal"], emptyNote);
+
+      await signingContract(capsuleToken, owner).unpause();
+    });
+
+    it("Owner mint should succeed while not paused if owner", async () => {
+      const { owner } = await wallets();
+
+      await expect(
+        signingContract(capsuleToken, owner).mintAsOwner(
+          owner.address,
+          "0x000aff",
+          {
+            weight: 400,
+            style: "normal",
+          },
+          emptyNote
+        )
+      )
+        .to.emit(capsuleToken, "MintCapsule")
+        .withArgs(3, owner.address, "0x000aff", [400, "normal"], emptyNote);
     });
 
     it("Set text of non-owned capsule should revert", async () => {
@@ -436,12 +572,12 @@ describe("Capsules", async () => {
       ).to.be.revertedWith(`NotCapsuleOwner("${owner}")`);
     });
 
-    it("Set valid text and font of owned capsule should succeed", async () => {
+    it("Set text and font of owned capsule should succeed", async () => {
       const { minter1 } = await wallets();
 
       const id = 1;
 
-      return signingContract(capsuleToken, minter1).setTextAndFont(
+      const tx = signingContract(capsuleToken, minter1).setTextAndFont(
         id,
         emptyNote,
         {
@@ -449,21 +585,29 @@ describe("Capsules", async () => {
           style: "normal",
         }
       );
+
+      await expect(tx)
+        .to.emit(capsuleToken, "SetCapsuleFont")
+        .withArgs(1, [400, "normal"]);
+
+      await expect(tx)
+        .to.emit(capsuleToken, "SetCapsuleText")
+        .withArgs(1, emptyNote);
     });
 
-    it("Set invalid font weight should revert", async () => {
+    it("Set valid font weight should succeed", async () => {
       const { minter1 } = await wallets();
 
       const id = 1;
 
       return expect(
         signingContract(capsuleToken, minter1).setFont(id, {
-          weight: 69,
+          weight: 400,
           style: "normal",
         })
-      ).to.be.revertedWith(
-        `InvalidFontForRenderer("${capsuleRenderer.address}")`
-      );
+      )
+        .to.emit(capsuleToken, "SetCapsuleFont")
+        .withArgs(id, [400, "normal"]);
     });
 
     it("Set invalid font style on owned Capsule should revert", async () => {
@@ -481,15 +625,16 @@ describe("Capsules", async () => {
       );
     });
 
-    it("Set invalid text should succeed", async () => {
+    it("Set text should succeed", async () => {
       const { minter1 } = await wallets();
 
       const id = 1;
 
-      await signingContract(capsuleToken, minter1).setText(
-        id,
-        stringTextToBytesText(["®"])
-      );
+      const text = stringTextToBytesText(["asdf"]);
+
+      await expect(signingContract(capsuleToken, minter1).setText(id, text))
+        .to.emit(capsuleToken, "SetCapsuleText")
+        .withArgs(id, text);
     });
 
     it("Set invalid renderer should revert", async () => {
@@ -736,7 +881,7 @@ describe("Capsules", async () => {
     });
   });
 
-  describe.skip("Text validation", async () => {
+  describe("Text validation", async () => {
     before(async () => {
       const { owner } = await wallets();
       await deployContracts();

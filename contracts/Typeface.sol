@@ -19,6 +19,13 @@ import "./interfaces/ITypeface.sol";
  */
 
 abstract contract Typeface is ITypeface, ERC165 {
+    modifier onlyDonationAddress() {
+        if (msg.sender != _donationAddress) {
+            revert("Typeface: Not donation address");
+        }
+        _;
+    }
+
     /// @notice Mapping of style => weight => font source data as bytes.
     mapping(string => mapping(uint256 => bytes)) private _source;
 
@@ -28,6 +35,9 @@ abstract contract Typeface is ITypeface, ERC165 {
     /// @notice Mapping of style => weight => true if font source has been stored.
     /// @dev This serves as a gas-efficient way to check if a font source has been stored without getting the entire source data.
     mapping(string => mapping(uint256 => bool)) private _hasSource;
+
+    /// @notice Address to receive donations.
+    address _donationAddress;
 
     /// @notice Typeface name
     string private _name;
@@ -67,6 +77,24 @@ abstract contract Typeface is ITypeface, ERC165 {
         returns (bytes32)
     {
         return _sourceHash[font.style][font.weight];
+    }
+
+    /// @notice Returns the address to receive donations.
+    /// @return donationAddress The address to receive donations.
+    function donationAddress() external view returns (address) {
+        return _donationAddress;
+    }
+
+    /// @notice Allows the donation address to set a new donation address.
+    /// @param __donationAddress New donation address.
+    function setDonationAddress(address __donationAddress) external {
+        _setDonationAddress(__donationAddress);
+    }
+
+    function _setDonationAddress(address __donationAddress) internal {
+        _donationAddress = payable(__donationAddress);
+
+        emit SetDonationAddress(__donationAddress);
     }
 
     /// @notice Sets source for Font.
@@ -110,8 +138,9 @@ abstract contract Typeface is ITypeface, ERC165 {
         }
     }
 
-    constructor(string memory __name) {
+    constructor(string memory __name, address __donationAddress) {
         _name = __name;
+        _setDonationAddress(__donationAddress);
     }
 
     /// @dev See {IERC165-supportsInterface}.

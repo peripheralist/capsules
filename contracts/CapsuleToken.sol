@@ -42,6 +42,7 @@ error ColorAlreadyMinted(uint256 capsuleId);
 error InvalidColor();
 error InvalidFontForRenderer(address renderer);
 error InvalidRenderer();
+error NoGiftAvailable();
 error NotCapsuleOwner(address owner);
 error NotCapsulesTypeface();
 error PureColorNotAllowed();
@@ -68,6 +69,12 @@ contract CapsuleToken is
     /// @notice Require that the value sent is at least MINT_PRICE.
     modifier requireMintPrice() {
         if (msg.value < MINT_PRICE) revert ValueBelowMintPrice();
+        _;
+    }
+
+    /// @notice Require that the gift count of sender is greater than 0.
+    modifier requireGift() {
+        if (giftCountOf(msg.sender) == 0) revert NoGiftAvailable();
         _;
     }
 
@@ -192,6 +199,9 @@ contract CapsuleToken is
     /// Renderer address of a Capsule ID
     mapping(uint256 => address) internal _rendererOf;
 
+    /// Numer of gift mints for addresses
+    mapping(address => uint256) internal _giftCount;
+
     /* -------------------------------------------------------------------------- */
     /*           00000  0   0  00000  00000  0000   0   0   000   0               */
     /*           0       0 0     0    0      0   0  00  0  0   0  0               */
@@ -213,12 +223,36 @@ contract CapsuleToken is
     )
         external
         payable
+        whenNotPaused
         requireMintPrice
         onlyImpureColor(color)
         nonReentrant
         returns (uint256)
     {
         return _mintCapsule(msg.sender, color, font, text);
+    }
+
+    /// @notice Mints a Capsule to sender, saving gas by not setting text.
+    /// @param color Color of Capsule.
+    /// @param font Font of Capsule.
+    /// @return capsuleId ID of minted Capsule.
+    function mintGift(
+        bytes3 color,
+        Font calldata font,
+        bytes32[8] calldata text
+    )
+        external
+        whenNotPaused
+        requireGift
+        onlyImpureColor(color)
+        nonReentrant
+        returns (uint256 capsuleId)
+    {
+        _giftCount[msg.sender]--;
+
+        capsuleId = _mintCapsule(msg.sender, color, font, text);
+
+        emit MintGift(msg.sender);
     }
 
     /// @notice Allows the CapsulesTypeface to mint a pure color Capsule.
@@ -228,6 +262,7 @@ contract CapsuleToken is
     /// @return capsuleId ID of minted Capsule.
     function mintPureColorForFont(address to, Font calldata font)
         external
+        whenNotPaused
         onlyCapsulesTypeface
         nonReentrant
         returns (uint256)
@@ -292,6 +327,13 @@ contract CapsuleToken is
         }
 
         return false;
+    }
+
+    /// @notice Returns the gift count of an address.
+    /// @param a Address to check gift count of.
+    /// @return count Gift count for address.
+    function giftCountOf(address a) public view returns (uint256) {
+        return _giftCount[a];
     }
 
     /// @notice Returns the color of a Capsule.
@@ -480,6 +522,47 @@ contract CapsuleToken is
     /* ---------------------------- ADMIN FUNCTIONS ----------------------------- */
     /* -------------------------------------------------------------------------- */
 
+    /// @notice Mints a Capsule to sender, saving gas by not setting text.
+    /// @param to Color of Capsule.
+    /// @param color Color of Capsule.
+    /// @param font Font of Capsule.
+    /// @return capsuleId ID of minted Capsule.
+    function mintAsOwner(
+        address to,
+        bytes3 color,
+        Font calldata font,
+        bytes32[8] calldata text
+    )
+        external
+        payable
+        onlyOwner
+        onlyImpureColor(color)
+        nonReentrant
+        returns (uint256)
+    {
+        return _mintCapsule(to, color, font, text);
+    }
+
+    /// @notice Allows the owner of this contract to set the gift count of multiple addresses.
+    /// @param addresses Addresses to set gift count for.
+    /// @param counts Counts to set for addresses.
+    function setGiftCounts(
+        address[] calldata addresses,
+        uint256[] calldata counts
+    ) external onlyOwner {
+        if (addresses.length != counts.length) {
+            revert("Number of addresses must equal number of gift counts.");
+        }
+
+        for (uint256 i; i < addresses.length; i++) {
+            address a = addresses[i];
+            uint256 count = counts[i];
+            _giftCount[a] = count;
+
+            emit SetGiftCount(a, count);
+        }
+    }
+
     /// @notice Allows the owner of this contract to update the default renderer contract.
     /// @param renderer Address of new default renderer contract.
     function setDefaultRenderer(address renderer) external onlyOwner {
@@ -549,7 +632,6 @@ contract CapsuleToken is
         bytes32[8] memory text
     )
         internal
-        whenNotPaused
         onlyMintableColor(color)
         onlyValidFontForRenderer(font, defaultRenderer)
         returns (uint256 capsuleId)

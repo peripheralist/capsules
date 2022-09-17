@@ -23,9 +23,6 @@ abstract contract TypefaceExpandable is Typeface, ITypefaceExpandable {
         _;
     }
 
-    /// Address with permission to add font hashes
-    address public _operator;
-
     /// @notice Require that all fonts have not been stored.
     modifier onlyUnstoredFonts(Font[] calldata fonts) {
         for (uint256 i; i < fonts.length; i++) {
@@ -34,6 +31,9 @@ abstract contract TypefaceExpandable is Typeface, ITypefaceExpandable {
         }
         _;
     }
+
+    /// Address with permission to add font hashes
+    address public _operator;
 
     /// @notice Allows operator to set new font hashes.
     /// @param fonts Array of fonts to set hashes for.
@@ -56,7 +56,11 @@ abstract contract TypefaceExpandable is Typeface, ITypefaceExpandable {
         _setOperator(__operator);
     }
 
-    constructor(string memory __name, address __operator) Typeface(__name) {
+    constructor(
+        string memory __name,
+        address __operator,
+        address donationAddress
+    ) Typeface(__name, donationAddress) {
         _setOperator(__operator);
     }
 
