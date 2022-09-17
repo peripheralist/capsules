@@ -13,7 +13,6 @@ pragma solidity ^0.8.12;
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "./interfaces/ITypeface.sol";
 import "./interfaces/ICapsuleRenderer.sol";
-import "./interfaces/ICapsuleToken.sol";
 import "./utils/Base64.sol";
 
 struct SvgSpecs {
@@ -74,8 +73,7 @@ contract CapsuleRenderer is ICapsuleRenderer {
                 id: capsule.id,
                 color: capsule.color,
                 font: capsule.font,
-                isPure: capsule.isPure,
-                isLocked: capsule.isLocked
+                isPure: capsule.isPure
             });
         }
 
@@ -88,27 +86,15 @@ contract CapsuleRenderer is ICapsuleRenderer {
                 memory dots1x12 = '<g id="dots1x12"><circle cx="2" cy="2" r="1.5"></circle><circle cx="2" cy="6" r="1.5"></circle><circle cx="2" cy="10" r="1.5"></circle><circle cx="2" cy="14" r="1.5"></circle><circle cx="2" cy="18" r="1.5"></circle><circle cx="2" cy="22" r="1.5"></circle><circle cx="2" cy="26" r="1.5"></circle><circle cx="2" cy="30" r="1.5"></circle><circle cx="2" cy="34" r="1.5"></circle><circle cx="2" cy="38" r="1.5"></circle><circle cx="2" cy="42" r="1.5"></circle><circle cx="2" cy="46" r="1.5"></circle></g>';
 
             // <g> row of dots 1 dot high that spans entire canvas width
-            // If Capsule is locked, trim start and end dots and translate group
             bytes memory edgeRowDots;
             edgeRowDots = abi.encodePacked('<g id="', specs.edgeRowId, '">');
-            if (capsule.isLocked) {
-                for (uint256 i; i < specs.textAreaWidthDots; i++) {
-                    edgeRowDots = abi.encodePacked(
-                        edgeRowDots,
-                        '<circle cx="',
-                        Strings.toString(dotSize * i + 2),
-                        '" cy="2" r="1.5"></circle>'
-                    );
-                }
-            } else {
-                for (uint256 i = 1; i < specs.textAreaWidthDots - 1; i++) {
-                    edgeRowDots = abi.encodePacked(
-                        edgeRowDots,
-                        '<circle cx="',
-                        Strings.toString(dotSize * i + 2),
-                        '" cy="2" r="1.5"></circle>'
-                    );
-                }
+            for (uint256 i = 1; i < specs.textAreaWidthDots - 1; i++) {
+                edgeRowDots = abi.encodePacked(
+                    edgeRowDots,
+                    '<circle cx="',
+                    Strings.toString(dotSize * i + 2),
+                    '" cy="2" r="1.5"></circle>'
+                );
             }
             edgeRowDots = abi.encodePacked(edgeRowDots, "</g>");
 
@@ -391,12 +377,10 @@ contract CapsuleRenderer is ICapsuleRenderer {
         }
 
         // Define the id of the svg row element.
-        bytes memory edgeRowId;
-        if (capsule.isLocked) {
-            edgeRowId = abi.encodePacked("rowL", Strings.toString(charWidth));
-        } else {
-            edgeRowId = abi.encodePacked("row", Strings.toString(charWidth));
-        }
+        bytes memory edgeRowId = abi.encodePacked(
+            "row",
+            Strings.toString(charWidth)
+        );
 
         // Width of the text area (in dots)
         uint256 textAreaWidthDots = charWidth * 5 + (charWidth - 1) + 6;
@@ -499,7 +483,7 @@ contract CapsuleRenderer is ICapsuleRenderer {
         }
     }
 
-    /// @notice Format bytes3 type as html hex color code.
+    /// @notice Format bytes3 as html hex color code.
     /// @param b bytes3 value representing hex-encoded RGB color.
     /// @return o Formatted color code string.
     function _bytes3ToColorCode(bytes3 b)
@@ -510,8 +494,8 @@ contract CapsuleRenderer is ICapsuleRenderer {
         bytes memory hexCode = bytes(Strings.toHexString(uint24(b)));
         o = "#";
         // Trim leading 0x from hexCode
-        for (uint256 i = 0; i < 6; i++) {
-            o = string.concat(o, string(abi.encodePacked(hexCode[i + 2])));
+        for (uint256 i = 2; i < 8; i++) {
+            o = string.concat(o, string(abi.encodePacked(hexCode[i])));
         }
     }
 

@@ -1,5 +1,5 @@
 {
-      "address": "0xD9748790CA77E19686fDba72Ee9Ae45dE529C44d", 
+      "address": "0x4B3f0741aCB35fA62fa53C289B5197533786a3d6", 
       "abi": [
   {
     "inputs": [
@@ -40,11 +40,6 @@
           {
             "internalType": "bool",
             "name": "isPure",
-            "type": "bool"
-          },
-          {
-            "internalType": "bool",
-            "name": "isLocked",
             "type": "bool"
           }
         ],

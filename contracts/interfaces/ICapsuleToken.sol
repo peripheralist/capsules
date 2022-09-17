@@ -21,24 +21,25 @@ struct Capsule {
     Font font;
     bytes32[8] text;
     bool isPure;
-    bool isLocked;
 }
 
 interface ICapsuleToken {
+    event AddValidRenderer(address renderer);
     event MintCapsule(
         uint256 indexed id,
         address indexed to,
-        bytes3 indexed color
+        bytes3 indexed color,
+        Font font,
+        bytes32[8] text
     );
     event SetDefaultRenderer(address renderer);
-    event SetCapsuleMetadata(address metadata);
     event SetFeeReceiver(address receiver);
+    event SetMetadata(address metadata);
     event SetPureColors(bytes3[] colors);
     event SetRoyalty(uint256 royalty);
-    event LockRenderer();
-    event LockCapsule(uint256 indexed id);
-    event EditCapsule(uint256 indexed id);
-    event SetRendererOf(uint256 indexed id, address renderer);
+    event SetCapsuleFont(uint256 indexed id, Font font);
+    event SetCapsuleRenderer(uint256 indexed id, address renderer);
+    event SetCapsuleText(uint256 indexed id, bytes32[8] text);
     event Withdraw(address to, uint256 amount);
 
     function capsuleOf(uint256 capsuleId)
@@ -47,11 +48,6 @@ interface ICapsuleToken {
         returns (Capsule memory);
 
     function isPureColor(bytes3 color) external view returns (bool);
-
-    function pureColorForFontWeight(uint256 font)
-        external
-        view
-        returns (bytes3);
 
     function colorOf(uint256 capsuleId) external view returns (bytes3);
 
@@ -62,37 +58,33 @@ interface ICapsuleToken {
 
     function fontOf(uint256 capsuleId) external view returns (Font memory);
 
-    function isLocked(uint256 capsuleId) external view returns (bool);
-
     function svgOf(uint256 capsuleId) external view returns (string memory);
 
-    function mint(bytes3 color, Font calldata font)
-        external
-        payable
-        returns (uint256);
-
-    function mintWithText(
+    function mint(
         bytes3 color,
         Font calldata font,
-        bytes32[8] calldata text
+        bytes32[8] memory text
     ) external payable returns (uint256);
 
     function mintPureColorForFont(address to, Font calldata font)
         external
         returns (uint256);
 
-    function lockCapsule(uint256 capsuleId) external;
-
-    function editCapsule(
+    function setTextAndFont(
         uint256 capsuleId,
         bytes32[8] calldata text,
-        Font calldata font,
-        bool lock
+        Font calldata font
     ) external;
+
+    function setText(uint256 capsuleId, bytes32[8] calldata text) external;
+
+    function setFont(uint256 capsuleId, Font calldata font) external;
 
     function setRendererOf(uint256 capsuleId, address renderer) external;
 
     function setDefaultRenderer(address renderer) external;
+
+    function addValidRenderer(address renderer) external;
 
     function burn(uint256 capsuleId) external;
 

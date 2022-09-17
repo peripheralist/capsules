@@ -1,5 +1,5 @@
 {
-      "address": "0xe160e47928907894F97a0DC025c61D64E862fEAa", 
+      "address": "0xEb269d9F0850CEf5e3aB0F9718fb79c466720784", 
       "abi": [
   {
     "inputs": [
@@ -29,10 +29,56 @@
         "internalType": "address",
         "name": "_capsuleToken",
         "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "operator",
+        "type": "address"
       }
     ],
     "stateMutability": "nonpayable",
     "type": "constructor"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "weight",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "style",
+            "type": "string"
+          }
+        ],
+        "internalType": "struct Font",
+        "name": "font",
+        "type": "tuple"
+      }
+    ],
+    "name": "FontAlreadyStored",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "NotOperator",
+    "type": "error"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "operator",
+        "type": "address"
+      }
+    ],
+    "name": "SetOperator",
+    "type": "event"
   },
   {
     "anonymous": false,
@@ -92,6 +138,19 @@
   },
   {
     "inputs": [],
+    "name": "_operator",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "capsuleToken",
     "outputs": [
       {
@@ -145,6 +204,93 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "operator",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "weight",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "style",
+            "type": "string"
+          }
+        ],
+        "internalType": "struct Font",
+        "name": "font",
+        "type": "tuple"
+      }
+    ],
+    "name": "patron",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "weight",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "style",
+            "type": "string"
+          }
+        ],
+        "internalType": "struct Font[]",
+        "name": "fonts",
+        "type": "tuple[]"
+      },
+      {
+        "internalType": "bytes32[]",
+        "name": "hashes",
+        "type": "bytes32[]"
+      }
+    ],
+    "name": "setFontSourceHashes",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "__operator",
+        "type": "address"
+      }
+    ],
+    "name": "setOperator",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

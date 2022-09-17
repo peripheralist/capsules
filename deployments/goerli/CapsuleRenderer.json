@@ -1,5 +1,5 @@
 {
-      "address": "0x350847C1EF01295D6eA9c2C0af576ad3F64Cf1b4", 
+      "address": "0x900Df788ae2E8E2440dbF4f3250c1204f4dDE50B", 
       "abi": [
   {
     "inputs": [
@@ -134,11 +134,6 @@
             "internalType": "bool",
             "name": "isPure",
             "type": "bool"
-          },
-          {
-            "internalType": "bool",
-            "name": "isLocked",
-            "type": "bool"
           }
         ],
         "internalType": "struct Capsule",
@@ -196,11 +191,6 @@
           {
             "internalType": "bool",
             "name": "isPure",
-            "type": "bool"
-          },
-          {
-            "internalType": "bool",
-            "name": "isLocked",
             "type": "bool"
           }
         ],

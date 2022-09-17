@@ -11,7 +11,7 @@ import "./interfaces/ITypeface.sol";
 
   @notice The Typeface contract allows storing and retrieving a "source", such as a base64-encoded file, for all fonts in a typeface.
 
-  Sources may be large and require a high gas fee to store. To reduce gas costs while deploying a contract containing source data, or to avoid surpassing gas limits of the deploy transaction block, only a hash of each source is stored when the contract is deployed. This allows sources to be stored in later transactions, ensuring the hash of the source matches the hash stored for that font.
+  Sources may be large and require a high gas fee to store. To reduce gas costs while deploying a contract containing source data, or to avoid surpassing gas limits of the deploy transaction block, only a hash of each source is stored when the contract is deployed. This allows sources to be stored in later transactions, ensuring the hash of the source matches the hash already stored for that font.
 
   Once the Typeface contract has been deployed, source hashes can't be added or modified.
 
@@ -19,15 +19,15 @@ import "./interfaces/ITypeface.sol";
  */
 
 abstract contract Typeface is ITypeface, ERC165 {
-    /// @notice Mapping of weight => style => font source data as bytes.
-    mapping(uint256 => mapping(string => bytes)) private _source;
+    /// @notice Mapping of style => weight => font source data as bytes.
+    mapping(string => mapping(uint256 => bytes)) private _source;
 
-    /// @notice Mapping of weight => style => keccack256 hash of font source data as bytes.
-    mapping(uint256 => mapping(string => bytes32)) private _sourceHash;
+    /// @notice Mapping of style => weight => keccack256 hash of font source data as bytes.
+    mapping(string => mapping(uint256 => bytes32)) private _sourceHash;
 
-    /// @notice Mapping of weight => style => true if font source has been stored.
+    /// @notice Mapping of style => weight => true if font source has been stored.
     /// @dev This serves as a gas-efficient way to check if a font source has been stored without getting the entire source data.
-    mapping(uint256 => mapping(string => bool)) private _hasSource;
+    mapping(string => mapping(uint256 => bool)) private _hasSource;
 
     /// @notice Typeface name
     string private _name;
@@ -47,14 +47,14 @@ abstract contract Typeface is ITypeface, ERC165 {
         virtual
         returns (bytes memory)
     {
-        return _source[font.weight][font.style];
+        return _source[font.style][font.weight];
     }
 
     /// @notice Return true if font source exists.
     /// @param font Font to check if source exists for.
     /// @return true True if font source exists.
     function hasSource(Font memory font) public view virtual returns (bool) {
-        return _hasSource[font.weight][font.style];
+        return _hasSource[font.style][font.weight];
     }
 
     /// @notice Return hash of source bytes for font.
@@ -66,7 +66,7 @@ abstract contract Typeface is ITypeface, ERC165 {
         virtual
         returns (bytes32)
     {
-        return _sourceHash[font.weight][font.style];
+        return _sourceHash[font.style][font.weight];
     }
 
     /// @notice Sets source for Font.
@@ -74,20 +74,17 @@ abstract contract Typeface is ITypeface, ERC165 {
     /// @param font Font to set source for.
     /// @param source Font source as bytes.
     function setSource(Font calldata font, bytes calldata source) public {
-        require(
-            _hasSource[font.weight][font.style] == false,
-            "Typeface: font source already exists"
-        );
+        require(!hasSource(font), "Typeface: font source already exists");
 
         require(
-            keccak256(source) == _sourceHash[font.weight][font.style],
+            keccak256(source) == sourceHash(font),
             "Typeface: Invalid font"
         );
 
         _beforeSetSource(font, source);
 
-        _source[font.weight][font.style] = source;
-        _hasSource[font.weight][font.style] = true;
+        _source[font.style][font.weight] = source;
+        _hasSource[font.style][font.weight] = true;
 
         emit SetSource(font);
 
@@ -107,7 +104,7 @@ abstract contract Typeface is ITypeface, ERC165 {
         );
 
         for (uint256 i; i < fonts.length; i++) {
-            _sourceHash[fonts[i].weight][fonts[i].style] = hashes[i];
+            _sourceHash[fonts[i].style][fonts[i].weight] = hashes[i];
 
             emit SetSourceHash(fonts[i], hashes[i]);
         }

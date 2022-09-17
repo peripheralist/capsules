@@ -1,5 +1,5 @@
 {
-      "address": "0xF353C02954e6162Af745d8aB52df121279B30C29", 
+      "address": "0x6c254e0860445d60968409a85a52463e89956896", 
       "abi": [
   {
     "inputs": [
@@ -29,10 +29,56 @@
         "internalType": "address",
         "name": "_capsuleToken",
         "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "controller",
+        "type": "address"
       }
     ],
     "stateMutability": "nonpayable",
     "type": "constructor"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "weight",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "style",
+            "type": "string"
+          }
+        ],
+        "internalType": "struct Font",
+        "name": "font",
+        "type": "tuple"
+      }
+    ],
+    "name": "FontAlreadyStored",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "NotController",
+    "type": "error"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "controller",
+        "type": "address"
+      }
+    ],
+    "name": "SetController",
+    "type": "event"
   },
   {
     "anonymous": false,
@@ -104,6 +150,50 @@
     "type": "function"
   },
   {
+    "inputs": [],
+    "name": "controller",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "weight",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "style",
+            "type": "string"
+          }
+        ],
+        "internalType": "struct Font",
+        "name": "font",
+        "type": "tuple"
+      }
+    ],
+    "name": "didStore",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
     "inputs": [
       {
         "components": [
@@ -145,6 +235,49 @@
       }
     ],
     "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_controller",
+        "type": "address"
+      }
+    ],
+    "name": "setController",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "weight",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "style",
+            "type": "string"
+          }
+        ],
+        "internalType": "struct Font[]",
+        "name": "fonts",
+        "type": "tuple[]"
+      },
+      {
+        "internalType": "bytes32[]",
+        "name": "hashes",
+        "type": "bytes32[]"
+      }
+    ],
+    "name": "setFontSourceHashes",
+    "outputs": [],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {

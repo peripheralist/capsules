@@ -58,7 +58,7 @@ module.exports = {
     mainnet: {
       url: "https://mainnet.infura.io/v3/" + infuraId,
       accounts: [deployerPk()],
-      gasPrice: 10e9,
+      gasPrice: 7e9,
     },
   },
   etherscan: {
@@ -100,7 +100,7 @@ module.exports = {
   },
   gasReporter: {
     currency: "USD",
-    gasPrice: 7,
+    gasPrice: 10,
     coinmarketcap: "cde088de-a8a7-493c-84d8-e9ecd6fac3a9",
   },
 };

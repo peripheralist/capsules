@@ -108,7 +108,7 @@ export async function mintCapsulesWithTexts(
 
   for (let i = 0; i < count; i++) {
     await capsules
-      .mintWithText(
+      .mint(
         validHexes[i],
         {
           weight: 400,
@@ -152,7 +152,10 @@ export async function wallets() {
   };
 }
 
-export async function deployCapsulesTypeface(capsuleTokenAddress: string) {
+export async function deployCapsulesTypeface(
+  capsuleTokenAddress: string,
+  controllerAddress: string
+) {
   console.log("🪄 Deploying CapsulesTypeface...");
 
   const _fonts = Object.keys(FONTS).map((weight) => ({
@@ -163,7 +166,7 @@ export async function deployCapsulesTypeface(capsuleTokenAddress: string) {
     keccak256(Buffer.from(font))
   );
 
-  const args = [_fonts, hashes, capsuleTokenAddress];
+  const args = [_fonts, hashes, capsuleTokenAddress, controllerAddress];
 
   const CapsulesTypeface = await ethers.getContractFactory("CapsulesTypeface");
   const capsulesTypeface = (await CapsulesTypeface.deploy(

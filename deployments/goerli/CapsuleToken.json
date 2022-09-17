@@ -1,5 +1,5 @@
 {
-      "address": "0x2dE6a6108ef9C0bb490B87B5f2f1c2C8e88A0c1A", 
+      "address": "0xc8DeC5bC41ec3935CA81675de8a24b9b79f0d1a7", 
       "abi": [
   {
     "inputs": [
@@ -60,11 +60,6 @@
   {
     "inputs": [],
     "name": "BalanceQueryForZeroAddress",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "CapsuleLocked",
     "type": "error"
   },
   {
@@ -212,32 +207,6 @@
   },
   {
     "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "id",
-        "type": "uint256"
-      }
-    ],
-    "name": "EditCapsule",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
-    "inputs": [
-      {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "id",
-        "type": "uint256"
-      }
-    ],
-    "name": "LockCapsule",
-    "type": "event"
-  },
-  {
-    "anonymous": false,
     "inputs": [],
     "name": "LockRenderer",
     "type": "event"
@@ -262,6 +231,30 @@
         "internalType": "bytes3",
         "name": "color",
         "type": "bytes3"
+      },
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "weight",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "style",
+            "type": "string"
+          }
+        ],
+        "indexed": false,
+        "internalType": "struct Font",
+        "name": "font",
+        "type": "tuple"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32[8]",
+        "name": "text",
+        "type": "bytes32[8]"
       }
     ],
     "name": "MintCapsule",
@@ -303,13 +296,69 @@
     "anonymous": false,
     "inputs": [
       {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "id",
+        "type": "uint256"
+      },
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "weight",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "style",
+            "type": "string"
+          }
+        ],
+        "indexed": false,
+        "internalType": "struct Font",
+        "name": "font",
+        "type": "tuple"
+      }
+    ],
+    "name": "SetCapsuleFont",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "id",
+        "type": "uint256"
+      },
+      {
         "indexed": false,
         "internalType": "address",
-        "name": "metadata",
+        "name": "renderer",
         "type": "address"
       }
     ],
-    "name": "SetCapsuleMetadata",
+    "name": "SetCapsuleRenderer",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": true,
+        "internalType": "uint256",
+        "name": "id",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "bytes32[8]",
+        "name": "text",
+        "type": "bytes32[8]"
+      }
+    ],
+    "name": "SetCapsuleText",
     "type": "event"
   },
   {
@@ -343,31 +392,25 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "bytes3[]",
-        "name": "colors",
-        "type": "bytes3[]"
+        "internalType": "address",
+        "name": "metadata",
+        "type": "address"
       }
     ],
-    "name": "SetPureColors",
+    "name": "SetMetadata",
     "type": "event"
   },
   {
     "anonymous": false,
     "inputs": [
       {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "id",
-        "type": "uint256"
-      },
-      {
         "indexed": false,
-        "internalType": "address",
-        "name": "renderer",
-        "type": "address"
+        "internalType": "bytes3[]",
+        "name": "colors",
+        "type": "bytes3[]"
       }
     ],
-    "name": "SetRendererOf",
+    "name": "SetPureColors",
     "type": "event"
   },
   {
@@ -564,11 +607,6 @@
             "internalType": "bool",
             "name": "isPure",
             "type": "bool"
-          },
-          {
-            "internalType": "bool",
-            "name": "isLocked",
-            "type": "bool"
           }
         ],
         "internalType": "struct Capsule",
@@ -622,46 +660,6 @@
       }
     ],
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "capsuleId",
-        "type": "uint256"
-      },
-      {
-        "internalType": "bytes32[8]",
-        "name": "text",
-        "type": "bytes32[8]"
-      },
-      {
-        "components": [
-          {
-            "internalType": "uint256",
-            "name": "weight",
-            "type": "uint256"
-          },
-          {
-            "internalType": "string",
-            "name": "style",
-            "type": "string"
-          }
-        ],
-        "internalType": "struct Font",
-        "name": "font",
-        "type": "tuple"
-      },
-      {
-        "internalType": "bool",
-        "name": "lock",
-        "type": "bool"
-      }
-    ],
-    "name": "editCapsule",
-    "outputs": [],
-    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -741,25 +739,6 @@
       }
     ],
     "name": "isApprovedForAll",
-    "outputs": [
-      {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "capsuleId",
-        "type": "uint256"
-      }
-    ],
-    "name": "isLocked",
     "outputs": [
       {
         "internalType": "bool",
@@ -885,19 +864,6 @@
   {
     "inputs": [
       {
-        "internalType": "uint256",
-        "name": "capsuleId",
-        "type": "uint256"
-      }
-    ],
-    "name": "lockCapsule",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
         "internalType": "bytes3",
         "name": "color",
         "type": "bytes3"
@@ -918,6 +884,11 @@
         "internalType": "struct Font",
         "name": "font",
         "type": "tuple"
+      },
+      {
+        "internalType": "bytes32[8]",
+        "name": "text",
+        "type": "bytes32[8]"
       }
     ],
     "name": "mint",
@@ -965,47 +936,6 @@
       }
     ],
     "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "bytes3",
-        "name": "color",
-        "type": "bytes3"
-      },
-      {
-        "components": [
-          {
-            "internalType": "uint256",
-            "name": "weight",
-            "type": "uint256"
-          },
-          {
-            "internalType": "string",
-            "name": "style",
-            "type": "string"
-          }
-        ],
-        "internalType": "struct Font",
-        "name": "font",
-        "type": "tuple"
-      },
-      {
-        "internalType": "bytes32[8]",
-        "name": "text",
-        "type": "bytes32[8]"
-      }
-    ],
-    "name": "mintWithText",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "capsuleId",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "payable",
     "type": "function"
   },
   {
@@ -1068,25 +998,6 @@
         "internalType": "bool",
         "name": "",
         "type": "bool"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "fontWeight",
-        "type": "uint256"
-      }
-    ],
-    "name": "pureColorForFontWeight",
-    "outputs": [
-      {
-        "internalType": "bytes3",
-        "name": "",
-        "type": "bytes3"
       }
     ],
     "stateMutability": "view",
@@ -1295,6 +1206,36 @@
         "type": "uint256"
       },
       {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "weight",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "style",
+            "type": "string"
+          }
+        ],
+        "internalType": "struct Font",
+        "name": "font",
+        "type": "tuple"
+      }
+    ],
+    "name": "setFont",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "capsuleId",
+        "type": "uint256"
+      },
+      {
         "internalType": "address",
         "name": "renderer",
         "type": "address"
@@ -1314,6 +1255,59 @@
       }
     ],
     "name": "setRoyalty",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "capsuleId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bytes32[8]",
+        "name": "text",
+        "type": "bytes32[8]"
+      }
+    ],
+    "name": "setText",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "capsuleId",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bytes32[8]",
+        "name": "text",
+        "type": "bytes32[8]"
+      },
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "weight",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "style",
+            "type": "string"
+          }
+        ],
+        "internalType": "struct Font",
+        "name": "font",
+        "type": "tuple"
+      }
+    ],
+    "name": "setTextAndFont",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
