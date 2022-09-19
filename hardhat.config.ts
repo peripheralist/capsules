@@ -90,7 +90,7 @@ module.exports = {
     artifacts: "./artifacts",
   },
   mocha: {
-    timeout: 6000000,
+    timeout: 100000000,
   },
   typechain: {
     outDir: "typechain-types",
@@ -100,7 +100,7 @@ module.exports = {
   },
   gasReporter: {
     currency: "USD",
-    gasPrice: 10,
+    gasPrice: 5,
     coinmarketcap: "cde088de-a8a7-493c-84d8-e9ecd6fac3a9",
   },
 };

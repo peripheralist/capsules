@@ -14,12 +14,9 @@ import "./interfaces/ITypefaceExpandable.sol";
  */
 
 abstract contract TypefaceExpandable is Typeface, ITypefaceExpandable {
-    error FontAlreadyStored(Font font);
-    error NotOperator();
-
     /// @notice Require that the sender is the operator address.
     modifier onlyOperator() {
-        if (msg.sender != _operator) revert NotOperator();
+        if (msg.sender != _operator) revert("TypefaceExpandable: Not operator");
         _;
     }
 
@@ -27,25 +24,29 @@ abstract contract TypefaceExpandable is Typeface, ITypefaceExpandable {
     modifier onlyUnstoredFonts(Font[] calldata fonts) {
         for (uint256 i; i < fonts.length; i++) {
             Font memory font = fonts[i];
-            if (hasSource(font)) revert FontAlreadyStored(font);
+            if (hasSource(font)) {
+                revert("TypefaceExpandable: Source already exists");
+            }
         }
         _;
     }
 
-    /// Address with permission to add font hashes
+    /// Address with permission to add or modify font hashes, as long as no source has been stored for that font.
     address public _operator;
 
     /// @notice Allows operator to set new font hashes.
+    /// @dev Equal number of fonts and hashes must be provided.
     /// @param fonts Array of fonts to set hashes for.
     /// @param hashes Array of hashes to set for fonts.
-    function setFontSourceHashes(
+    function setSourceHashes(
         Font[] calldata fonts,
         bytes32[] calldata hashes
     ) external onlyOperator onlyUnstoredFonts(fonts) {
-        _setFontSourceHashes(fonts, hashes);
+        _setSourceHashes(fonts, hashes);
     }
 
     /// @notice Returns operator of contract.
+    /// @return operator Operator address.
     function operator() external view returns (address) {
         return _operator;
     }
@@ -58,8 +59,8 @@ abstract contract TypefaceExpandable is Typeface, ITypefaceExpandable {
 
     constructor(
         string memory __name,
-        address __operator,
-        address donationAddress
+        address donationAddress,
+        address __operator
     ) Typeface(__name, donationAddress) {
         _setOperator(__operator);
     }

@@ -35,17 +35,18 @@ export let capsuleMetadata: CapsuleMetadata;
 async function deployContracts() {
   const { deployer, owner, feeReceiver } = await wallets();
 
-  const { contract: _capsuleMetadata } = await deployCapsuleMetadata();
-  capsuleMetadata = _capsuleMetadata;
-
   const nonce = await deployer.getTransactionCount();
   const expectedCapsuleTokenAddress = utils.getContractAddress({
     from: deployer.address,
-    nonce: nonce + 2, // This should be 3 (see deploy.ts) unsure why 2 works
+    nonce: nonce + 5,
   });
+
+  const { contract: _capsuleMetadata } = await deployCapsuleMetadata();
+  capsuleMetadata = _capsuleMetadata;
 
   const { contract: _capsulesTypeface } = await deployCapsulesTypeface(
     expectedCapsuleTokenAddress,
+    owner.address,
     owner.address
   );
   capsulesTypeface = _capsulesTypeface;
@@ -98,25 +99,21 @@ describe("Capsules", async () => {
       expect(await capsuleToken.capsulesTypeface()).to.equal(
         capsulesTypeface.address
       );
+      expect(await capsuleToken.defaultRenderer()).to.equal(
+        capsuleRenderer.address
+      );
+      expect(await capsuleToken.capsuleMetadata()).to.equal(
+        capsuleMetadata.address
+      );
 
       expect(await capsulesTypeface.capsuleToken()).to.equal(
         capsuleToken.address
       );
-
       expect(await capsulesTypeface.operator()).to.equal(owner.address);
-
       expect(await capsulesTypeface.donationAddress()).to.equal(owner.address);
 
       expect(await capsuleRenderer.capsulesTypeface()).to.equal(
         capsulesTypeface.address
-      );
-
-      expect(await capsuleToken.defaultRenderer()).to.equal(
-        capsuleRenderer.address
-      );
-
-      expect(await capsuleToken.capsuleMetadata()).to.equal(
-        capsuleMetadata.address
       );
 
       const TestRenderer = await ethers.getContractFactory(
@@ -169,6 +166,42 @@ describe("Capsules", async () => {
       ).to.be.revertedWith("Pausable: paused");
     });
 
+    it("Valid mintGift should revert while paused", async () => {
+      const { minter1, owner } = await wallets();
+
+      const minter1CapsuleToken = signingContract(capsuleToken, minter1);
+
+      await signingContract(capsuleToken, owner).setGiftCounts(
+        [minter1.address],
+        [1]
+      );
+
+      return expect(
+        minter1CapsuleToken.mintGift(
+          "0x0005ff",
+          {
+            weight: 400,
+            style: "normal",
+          },
+          emptyNote
+        )
+      ).to.be.revertedWith("Pausable: paused");
+    });
+
+    it("mintPureColorForFont should revert while paused", async () => {
+      const { minter1 } = await wallets();
+
+      return expect(
+        signingContract(capsuleToken, minter1).mintPureColorForFont(
+          minter1.address,
+          {
+            weight: 100,
+            style: "normal",
+          }
+        )
+      ).to.be.revertedWith("Pausable: paused");
+    });
+
     it("Should unpause", async () => {
       const { owner } = await wallets();
       const ownerCapsules = signingContract(capsuleToken, owner);
@@ -212,6 +245,11 @@ describe("Capsules", async () => {
       await expect(tx)
         .to.emit(capsulesTypeface, "SetSource")
         .withArgs([400, "normal"]);
+    });
+
+    it("CapsulesTypeface contract should return correct patron", async () => {
+      const { owner } = await wallets();
+
       await expect(
         await capsulesTypeface.patron({ weight: 400, style: "normal" })
       ).to.equal(owner.address);
@@ -222,22 +260,6 @@ describe("Capsules", async () => {
 
       return expect(await capsuleToken.balanceOf(owner.address)).to.equal(1);
     });
-
-    it("setFontSrc should revert if already set", async () => {
-      const { owner } = await wallets();
-
-      // Store first font
-      return expect(
-        signingContract(capsulesTypeface, owner).setSource(
-          {
-            weight: 400,
-            style: "normal",
-          },
-          Buffer.from(FONTS[400]),
-          { gasLimit: 30000000 }
-        )
-      ).to.be.revertedWith("Typeface: font source already exists");
-    });
   });
 
   describe("Minting", async () => {
@@ -246,6 +268,22 @@ describe("Capsules", async () => {
       await deployContracts();
       await unpause();
       await store400(owner);
+    });
+
+    it("Mint pure color as non-CapsulesTypeface should revert", async () => {
+      const { minter1 } = await wallets();
+
+      expect(minter1.address).to.not.equal(capsulesTypeface.address);
+
+      return expect(
+        signingContract(capsuleToken, minter1).mintPureColorForFont(
+          minter1.address,
+          {
+            weight: 100,
+            style: "normal",
+          }
+        )
+      ).to.be.revertedWith(`NotCapsulesTypeface()`);
     });
 
     it("Mint with invalid font weight (not stored yet) should revert", async () => {
@@ -388,6 +426,8 @@ describe("Capsules", async () => {
 
       const tokenIdOfColor = await capsuleToken.tokenIdOfColor(color);
 
+      expect(tokenIdOfColor.toNumber()).to.be.greaterThan(0);
+
       return expect(
         signingContract(capsuleToken, minter1).mint(
           color,
@@ -435,12 +475,18 @@ describe("Capsules", async () => {
       await expect(tx)
         .to.emit(capsuleToken, "SetGiftCount")
         .withArgs(minter1.address, 1);
+    });
+
+    it("Should return correct giftCount", async () => {
+      const { minter1 } = await wallets();
 
       expect(await capsuleToken.giftCountOf(minter1.address)).to.equal(1);
     });
 
     it("Mint gift should revert if no gift available", async () => {
       const { minter2 } = await wallets();
+
+      expect(await capsuleToken.giftCountOf(minter2.address)).to.equal(0);
 
       await expect(
         signingContract(capsuleToken, minter2).mintGift(
@@ -454,10 +500,12 @@ describe("Capsules", async () => {
       ).to.be.revertedWith("NoGiftAvailable");
     });
 
-    it("Mint gift should succeed if no gift available", async () => {
+    it("Mint gift should succeed if giftCount > 0", async () => {
       const { minter1 } = await wallets();
 
       const initialGiftCount = await capsuleToken.giftCountOf(minter1.address);
+
+      expect(initialGiftCount.toNumber()).to.be.greaterThan(0);
 
       const tx = signingContract(capsuleToken, minter1).mintGift(
         "0x0005ff",
@@ -489,7 +537,7 @@ describe("Capsules", async () => {
       await store400(minter1);
     });
 
-    it("Owner mint should fail if not owner", async () => {
+    it("mintAsOwner should fail if not owner", async () => {
       const { minter1 } = await wallets();
 
       return expect(
@@ -562,17 +610,36 @@ describe("Capsules", async () => {
 
       const id = 1;
 
-      const owner = await capsuleToken.ownerOf(id);
+      const capsuleOwner = await capsuleToken.ownerOf(id);
+
+      expect(capsuleOwner).to.not.equal(minter2.address);
 
       return expect(
         signingContract(capsuleToken, minter2).setFont(id, {
           weight: 400,
           style: "normal",
         })
-      ).to.be.revertedWith(`NotCapsuleOwner("${owner}")`);
+      ).to.be.revertedWith(`NotCapsuleOwner("${capsuleOwner}")`);
     });
 
-    it("Set text and font of owned capsule should succeed", async () => {
+    it("Set text and font of non-owned capsule should revert", async () => {
+      const { minter2 } = await wallets();
+
+      const id = 1;
+
+      const capsuleOwner = await capsuleToken.ownerOf(id);
+
+      expect(capsuleOwner).to.not.equal(minter2.address);
+
+      await expect(
+        signingContract(capsuleToken, minter2).setTextAndFont(id, emptyNote, {
+          weight: 400,
+          style: "normal",
+        })
+      ).to.be.revertedWith(`NotCapsuleOwner("${capsuleOwner}")`);
+    });
+
+    it("Set text and font of owned Capsule should succeed", async () => {
       const { minter1 } = await wallets();
 
       const id = 1;
@@ -595,10 +662,14 @@ describe("Capsules", async () => {
         .withArgs(1, emptyNote);
     });
 
-    it("Set valid font weight should succeed", async () => {
+    it("Set valid font weight on owned Capsule should succeed", async () => {
       const { minter1 } = await wallets();
 
       const id = 1;
+
+      const capsuleOwner = await capsuleToken.ownerOf(id);
+
+      expect(capsuleOwner).to.equal(minter1.address);
 
       return expect(
         signingContract(capsuleToken, minter1).setFont(id, {
@@ -615,6 +686,10 @@ describe("Capsules", async () => {
 
       const id = 1;
 
+      const capsuleOwner = await capsuleToken.ownerOf(id);
+
+      expect(capsuleOwner).to.equal(minter1.address);
+
       return expect(
         signingContract(capsuleToken, minter1).setFont(id, {
           weight: 400,
@@ -625,10 +700,14 @@ describe("Capsules", async () => {
       );
     });
 
-    it("Set text should succeed", async () => {
+    it("Set text on owned Capsule should succeed", async () => {
       const { minter1 } = await wallets();
 
       const id = 1;
+
+      const capsuleOwner = await capsuleToken.ownerOf(id);
+
+      expect(capsuleOwner).to.equal(minter1.address);
 
       const text = stringTextToBytesText(["asdf"]);
 
@@ -637,7 +716,7 @@ describe("Capsules", async () => {
         .withArgs(id, text);
     });
 
-    it("Set invalid renderer should revert", async () => {
+    it("Set invalid renderer on owned Capsule should revert", async () => {
       const { minter1 } = await wallets();
 
       const id = 1;
@@ -665,16 +744,26 @@ describe("Capsules", async () => {
       await expect(ownerCapsuleToken.addValidRenderer(newRendererAddress))
         .to.emit(capsuleToken, "AddValidRenderer")
         .withArgs(newRendererAddress);
+    });
+
+    it("Should return correct isValidRenderer()", async () => {
+      const { owner } = await wallets();
+
+      const ownerCapsuleToken = signingContract(capsuleToken, owner);
 
       expect(
-        await ownerCapsuleToken.isValidRenderer(newRendererAddress)
+        await ownerCapsuleToken.isValidRenderer(testRenderer.address)
       ).to.equal(true);
     });
 
-    it("Set renderer should succeed and Capsule should return SVG from new renderer", async () => {
+    it("Set renderer of owned Capsule should succeed and Capsule should return SVG from new renderer", async () => {
       const { minter1 } = await wallets();
 
       const id = 1;
+
+      const capsuleOwner = await capsuleToken.ownerOf(id);
+
+      expect(capsuleOwner).to.equal(minter1.address);
 
       const minter1CapsuleToken = signingContract(capsuleToken, minter1);
 
@@ -700,22 +789,6 @@ describe("Capsules", async () => {
       ](capsule);
       await expect(svgFromCapsuleToken).to.equal(svgFromTestRenderer);
     });
-
-    it("Set default renderer as owner should succeed", async () => {
-      const { owner } = await wallets();
-
-      const ownerCapsuleToken = signingContract(capsuleToken, owner);
-
-      const newRendererAddress = testRenderer.address;
-
-      await expect(ownerCapsuleToken.setDefaultRenderer(newRendererAddress))
-        .to.emit(capsuleToken, "SetDefaultRenderer")
-        .withArgs(newRendererAddress);
-
-      expect(await ownerCapsuleToken.defaultRenderer()).to.equal(
-        newRendererAddress
-      );
-    });
   });
 
   describe("Admin", async () => {
@@ -731,6 +804,46 @@ describe("Capsules", async () => {
       return expect(
         minter1CapsuleToken.setDefaultRenderer(renderer2.address)
       ).to.be.revertedWith("Ownable: caller is not the owner");
+    });
+
+    it("Add valid renderer as owner should succeed", async () => {
+      const { owner, renderer2 } = await wallets();
+
+      const ownerCapsuleToken = signingContract(capsuleToken, owner);
+
+      await expect(ownerCapsuleToken.addValidRenderer(renderer2.address))
+        .to.emit(capsuleToken, "AddValidRenderer")
+        .withArgs(renderer2.address);
+    });
+
+    it("Should return correct isValidRenderer()", async () => {
+      const { owner, renderer2 } = await wallets();
+
+      const ownerCapsuleToken = signingContract(capsuleToken, owner);
+
+      expect(
+        await ownerCapsuleToken.isValidRenderer(renderer2.address)
+      ).to.equal(true);
+    });
+
+    it("Set default renderer as owner should succeed", async () => {
+      const { owner, renderer2 } = await wallets();
+
+      const ownerCapsuleToken = signingContract(capsuleToken, owner);
+
+      await expect(ownerCapsuleToken.setDefaultRenderer(renderer2.address))
+        .to.emit(capsuleToken, "SetDefaultRenderer")
+        .withArgs(renderer2.address);
+    });
+
+    it("Should return correct defaultRenderer", async () => {
+      const { owner, renderer2 } = await wallets();
+
+      const ownerCapsuleToken = signingContract(capsuleToken, owner);
+
+      expect(await ownerCapsuleToken.defaultRenderer()).to.equal(
+        renderer2.address
+      );
     });
 
     it("Set metadata address as non-owner should revert", async () => {
@@ -874,14 +987,17 @@ describe("Capsules", async () => {
         capsuleToken.address
       );
 
-      await expect(ownerCapsuleToken.withdraw())
-        .to.changeEtherBalance(feeReceiver, initialBalance)
+      const tx = ownerCapsuleToken.withdraw();
+
+      await expect(tx)
         .to.emit(capsuleToken, "Withdraw")
         .withArgs(feeReceiver.address, initialBalance);
+
+      await expect(await tx).to.changeEtherBalance(feeReceiver, initialBalance);
     });
   });
 
-  describe("Text validation", async () => {
+  describe.skip("Text validation", async () => {
     before(async () => {
       const { owner } = await wallets();
       await deployContracts();

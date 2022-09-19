@@ -18,6 +18,8 @@ export const mintPrice = ethers.utils.parseEther("0.01");
 
 export const maxSupply = 7957;
 
+export const getDeployer = async () => (await ethers.getSigners())[0];
+
 export const validHexes = () => {
   let hexes: string[] = [];
 
@@ -154,28 +156,33 @@ export async function wallets() {
 
 export async function deployCapsulesTypeface(
   capsuleTokenAddress: string,
-  controllerAddress: string
+  donationAddress: string,
+  operatorAddress: string,
+  verbose?: boolean
 ) {
-  console.log("🪄 Deploying CapsulesTypeface...");
+  const { deployer } = await wallets();
 
-  const _fonts = Object.keys(FONTS).map((weight) => ({
-    weight: parseInt(weight) as keyof typeof FONTS,
-    style: "normal",
-  }));
-  const hashes = Object.values(FONTS).map((font) =>
-    keccak256(Buffer.from(font))
-  );
+  if (verbose) console.log("🪄 Deploying CapsulesTypeface...");
 
-  const args = [_fonts, hashes, capsuleTokenAddress, controllerAddress];
+  // Initially set operator to deployer address so we can set hashes in this script
+  const args = [capsuleTokenAddress, donationAddress, deployer.address];
 
   const CapsulesTypeface = await ethers.getContractFactory("CapsulesTypeface");
   const capsulesTypeface = (await CapsulesTypeface.deploy(
     ...args
   )) as CapsulesTypeface;
 
-  console.log(
-    "✅ Deployed CapsulesTypeface " + chalk.magenta(capsulesTypeface.address)
-  );
+  if (verbose) {
+    console.log(
+      "✅ Deployed CapsulesTypeface " + chalk.magenta(capsulesTypeface.address)
+    );
+  }
+
+  // Set sourceHashes as operator
+  await capsulesTypeface.setSourceHashes(fonts, fontHashes);
+
+  // Set operator to indended operator address
+  await capsulesTypeface.setOperator(operatorAddress);
 
   return { contract: capsulesTypeface, args };
 }
@@ -185,9 +192,10 @@ export async function deployCapsuleToken(
   capsuleRendererAddress: string,
   capsuleMetadataAddress: string,
   ownerAddress: string,
-  feeReceiverAddress: string
+  feeReceiverAddress: string,
+  verbose?: boolean
 ) {
-  console.log("🪄 Deploying CapsuleToken...");
+  if (verbose) console.log("🪄 Deploying CapsuleToken...");
 
   const Capsules = await ethers.getContractFactory("CapsuleToken");
 
@@ -204,29 +212,36 @@ export async function deployCapsuleToken(
 
   const deployedContract = (await Capsules.deploy(...args)) as CapsuleToken;
 
-  console.log(
-    "✅ Deployed CapsuleToken " + chalk.magenta(deployedContract.address)
-  );
+  if (verbose) {
+    console.log(
+      "✅ Deployed CapsuleToken " + chalk.magenta(deployedContract.address)
+    );
 
-  console.log(
-    `Transferring ownership of CapsuleToken to ${chalk.cyan(ownerAddress)}...`
-  );
+    console.log(
+      `Transferring ownership of CapsuleToken to ${chalk.cyan(ownerAddress)}...`
+    );
+  }
 
   const transferTx = await (
     await deployedContract.transferOwnership(ownerAddress)
   ).wait();
 
-  if (!transferTx.status) {
-    console.log(chalk.red("Transfer failed"));
-  } else {
-    console.log("➡️  Transfer complete");
+  if (verbose) {
+    if (!transferTx.status) {
+      console.log(chalk.red("Transfer failed"));
+    } else {
+      console.log("➡️  Transfer complete");
+    }
   }
 
   return { contract: deployedContract, args };
 }
 
-export async function deployCapsuleRenderer(capsulesTypefaceAddress: string) {
-  console.log("🪄 Deploying CapsuleRenderer...");
+export async function deployCapsuleRenderer(
+  capsulesTypefaceAddress: string,
+  verbose?: boolean
+) {
+  if (verbose) console.log("🪄 Deploying CapsuleRenderer...");
 
   const CapsuleRenderer = await ethers.getContractFactory("CapsuleRenderer");
 
@@ -236,23 +251,27 @@ export async function deployCapsuleRenderer(capsulesTypefaceAddress: string) {
     ...args
   )) as CapsuleRenderer;
 
-  console.log(
-    "✅ Deployed CapsuleRenderer " + chalk.magenta(capsuleRenderer.address)
-  );
+  if (verbose) {
+    console.log(
+      "✅ Deployed CapsuleRenderer " + chalk.magenta(capsuleRenderer.address)
+    );
+  }
 
   return { contract: capsuleRenderer, args };
 }
 
-export async function deployCapsuleMetadata() {
-  console.log("🪄 Deploying CapsuleMetadata...");
+export async function deployCapsuleMetadata(verbose?: boolean) {
+  if (verbose) console.log("🪄 Deploying CapsuleMetadata...");
 
   const CapsuleMetadata = await ethers.getContractFactory("CapsuleMetadata");
 
   const capsuleMetadata = (await CapsuleMetadata.deploy()) as CapsuleMetadata;
 
-  console.log(
-    "✅ Deployed CapsuleMetadata " + chalk.magenta(capsuleMetadata.address)
-  );
+  if (verbose) {
+    console.log(
+      "✅ Deployed CapsuleMetadata " + chalk.magenta(capsuleMetadata.address)
+    );
+  }
 
   return { contract: capsuleMetadata, args: [] };
 }
@@ -266,16 +285,3 @@ export const signingContract = <C extends Contract>(
     contract.interface,
     signer ?? ethers.provider
   ) as C;
-
-// export const capsulesContract = (address: string, signer?: Signer) =>
-//   new Contract(
-//     address,
-//     JSON.parse(
-//       fs
-//         .readFileSync(
-//           "./artifacts/contracts/CapsuleToken.sol/CapsuleToken.json"
-//         )
-//         .toString()
-//     ).abi,
-//     signer ?? ethers.provider
-//   ) as CapsuleToken;

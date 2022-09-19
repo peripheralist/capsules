@@ -1,5 +1,5 @@
 {
-      "address": "0x0a51692AB664e8f2bF338C97E3d685C5f7f0075a", 
+      "address": "0x2FD677b4867ACA09505b3FC518C6B7C1BFf45f90", 
       "abi": [
   {
     "inputs": [
@@ -102,6 +102,11 @@
   {
     "inputs": [],
     "name": "MintZeroQuantity",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "NoGiftAvailable",
     "type": "error"
   },
   {
@@ -271,6 +276,19 @@
     "anonymous": false,
     "inputs": [
       {
+        "indexed": false,
+        "internalType": "address",
+        "name": "minter",
+        "type": "address"
+      }
+    ],
+    "name": "MintGift",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
         "indexed": true,
         "internalType": "address",
         "name": "previousOwner",
@@ -392,6 +410,25 @@
       }
     ],
     "name": "SetFeeReceiver",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_address",
+        "type": "address"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "count",
+        "type": "uint256"
+      }
+    ],
+    "name": "SetGiftCount",
     "type": "event"
   },
   {
@@ -749,6 +786,25 @@
     "inputs": [
       {
         "internalType": "address",
+        "name": "a",
+        "type": "address"
+      }
+    ],
+    "name": "giftCountOf",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
         "name": "owner",
         "type": "address"
       },
@@ -920,6 +976,93 @@
       }
     ],
     "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "to",
+        "type": "address"
+      },
+      {
+        "internalType": "bytes3",
+        "name": "color",
+        "type": "bytes3"
+      },
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "weight",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "style",
+            "type": "string"
+          }
+        ],
+        "internalType": "struct Font",
+        "name": "font",
+        "type": "tuple"
+      },
+      {
+        "internalType": "bytes32[8]",
+        "name": "text",
+        "type": "bytes32[8]"
+      }
+    ],
+    "name": "mintAsOwner",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes3",
+        "name": "color",
+        "type": "bytes3"
+      },
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "weight",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "style",
+            "type": "string"
+          }
+        ],
+        "internalType": "struct Font",
+        "name": "font",
+        "type": "tuple"
+      },
+      {
+        "internalType": "bytes32[8]",
+        "name": "text",
+        "type": "bytes32[8]"
+      }
+    ],
+    "name": "mintGift",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "capsuleId",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -1244,6 +1387,24 @@
       }
     ],
     "name": "setFont",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address[]",
+        "name": "addresses",
+        "type": "address[]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "counts",
+        "type": "uint256[]"
+      }
+    ],
+    "name": "setGiftCounts",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

@@ -5,7 +5,7 @@
 
   @author peri
 
-  @notice Capsules typeface stored on-chain using the TypefaceExpandable contract, allowing additional fonts to be added later. 7 "normal" fonts are supported, with weights 100-700. All characters require 2 or less bytes to encode.
+  @notice Capsules typeface stored on-chain using the TypefaceExpandable contract, allowing additional fonts to be added later.
  */
 
 pragma solidity ^0.8.8;
@@ -21,13 +21,10 @@ contract CapsulesTypeface is TypefaceExpandable {
     mapping(string => mapping(uint256 => address)) private _patron;
 
     constructor(
-        Font[] memory fonts,
-        bytes32[] memory hashes,
         address _capsuleToken,
+        address donationAddress,
         address operator
-    ) TypefaceExpandable("Capsules", operator, operator) {
-        _setFontSourceHashes(fonts, hashes);
-
+    ) TypefaceExpandable("Capsules", donationAddress, operator) {
         capsuleToken = ICapsuleToken(_capsuleToken);
     }
 

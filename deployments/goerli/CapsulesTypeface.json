@@ -1,33 +1,16 @@
 {
-      "address": "0xb108c6d494cD3e0b23e5B12948004cCa4bbfcD86", 
+      "address": "0x56bfE8561C2F88209b12A9219BF534A72216f8f7", 
       "abi": [
   {
     "inputs": [
       {
-        "components": [
-          {
-            "internalType": "uint256",
-            "name": "weight",
-            "type": "uint256"
-          },
-          {
-            "internalType": "string",
-            "name": "style",
-            "type": "string"
-          }
-        ],
-        "internalType": "struct Font[]",
-        "name": "fonts",
-        "type": "tuple[]"
-      },
-      {
-        "internalType": "bytes32[]",
-        "name": "hashes",
-        "type": "bytes32[]"
+        "internalType": "address",
+        "name": "_capsuleToken",
+        "type": "address"
       },
       {
         "internalType": "address",
-        "name": "_capsuleToken",
+        "name": "donationAddress",
         "type": "address"
       },
       {
@@ -40,32 +23,17 @@
     "type": "constructor"
   },
   {
+    "anonymous": false,
     "inputs": [
       {
-        "components": [
-          {
-            "internalType": "uint256",
-            "name": "weight",
-            "type": "uint256"
-          },
-          {
-            "internalType": "string",
-            "name": "style",
-            "type": "string"
-          }
-        ],
-        "internalType": "struct Font",
-        "name": "font",
-        "type": "tuple"
+        "indexed": false,
+        "internalType": "address",
+        "name": "donationAddress",
+        "type": "address"
       }
     ],
-    "name": "FontAlreadyStored",
-    "type": "error"
-  },
-  {
-    "inputs": [],
-    "name": "NotOperator",
-    "type": "error"
+    "name": "SetDonationAddress",
+    "type": "event"
   },
   {
     "anonymous": false,
@@ -155,6 +123,19 @@
     "outputs": [
       {
         "internalType": "contract ICapsuleToken",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "donationAddress",
+    "outputs": [
+      {
+        "internalType": "address",
         "name": "",
         "type": "address"
       }
@@ -253,29 +234,12 @@
   {
     "inputs": [
       {
-        "components": [
-          {
-            "internalType": "uint256",
-            "name": "weight",
-            "type": "uint256"
-          },
-          {
-            "internalType": "string",
-            "name": "style",
-            "type": "string"
-          }
-        ],
-        "internalType": "struct Font[]",
-        "name": "fonts",
-        "type": "tuple[]"
-      },
-      {
-        "internalType": "bytes32[]",
-        "name": "hashes",
-        "type": "bytes32[]"
+        "internalType": "address",
+        "name": "__donationAddress",
+        "type": "address"
       }
     ],
-    "name": "setFontSourceHashes",
+    "name": "setDonationAddress",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"
@@ -319,6 +283,36 @@
       }
     ],
     "name": "setSource",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "weight",
+            "type": "uint256"
+          },
+          {
+            "internalType": "string",
+            "name": "style",
+            "type": "string"
+          }
+        ],
+        "internalType": "struct Font[]",
+        "name": "fonts",
+        "type": "tuple[]"
+      },
+      {
+        "internalType": "bytes32[]",
+        "name": "hashes",
+        "type": "bytes32[]"
+      }
+    ],
+    "name": "setSourceHashes",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

@@ -8,17 +8,16 @@ import {
   deployCapsuleRenderer,
   deployCapsulesTypeface,
   deployCapsuleToken,
+  getDeployer,
 } from "./utils";
 
 const network = process.env.HARDHAT_NETWORK;
-const ownerAddress = "0x817738DC393d682Ca5fBb268707b99F2aAe96baE";
-const feeReceiverAddress = "0x817738DC393d682Ca5fBb268707b99F2aAe96baE";
-const typefaceControllerAddress = "0x817738DC393d682Ca5fBb268707b99F2aAe96baE";
-const donationAddress = "0x817738DC393d682Ca5fBb268707b99F2aAe96baE";
+const ownerAddress = "0x63A2368F4B509438ca90186cb1C15156713D5834";
+const feeReceiverAddress = "0x63A2368F4B509438ca90186cb1C15156713D5834";
+const operatorAddress = "0x63A2368F4B509438ca90186cb1C15156713D5834";
+const donationAddress = "0x63A2368F4B509438ca90186cb1C15156713D5834";
 // 0x817738DC393d682Ca5fBb268707b99F2aAe96baE
 // 0x63A2368F4B509438ca90186cb1C15156713D5834
-
-const getDeployer = async () => (await ethers.getSigners())[0];
 
 const writeFiles = (
   contractName: string,
@@ -67,11 +66,11 @@ const main = async () => {
   const nonce = await deployer.getTransactionCount();
   const expectedCapsuleTokenAddress = ethers.utils.getContractAddress({
     from: deployer.address,
-    nonce: nonce + 3,
+    nonce: nonce + 5,
   });
 
   // Deploy CapsuleMetadata
-  const { contract: capsuleMetadata } = await deployCapsuleMetadata().then(
+  const { contract: capsuleMetadata } = await deployCapsuleMetadata(true).then(
     (x) => {
       writeFiles(
         "CapsuleMetadata",
@@ -85,7 +84,9 @@ const main = async () => {
   // Deploy CapsulesTypeface
   const { contract: capsulesTypeface } = await deployCapsulesTypeface(
     expectedCapsuleTokenAddress,
-    typefaceControllerAddress
+    donationAddress,
+    operatorAddress,
+    true
   ).then((x) => {
     writeFiles(
       "CapsulesTypeface",
@@ -97,7 +98,8 @@ const main = async () => {
 
   // Deploy CapsuleRenderer
   const { contract: capsuleRenderer } = await deployCapsuleRenderer(
-    capsulesTypeface.address
+    capsulesTypeface.address,
+    true
   ).then((x) => {
     writeFiles(
       "CapsuleRenderer",
@@ -113,7 +115,8 @@ const main = async () => {
     capsuleRenderer.address,
     capsuleMetadata.address,
     ownerAddress,
-    feeReceiverAddress
+    feeReceiverAddress,
+    true
   ).then((x) => {
     writeFiles(
       "CapsuleToken",

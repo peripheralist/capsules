@@ -17,7 +17,7 @@ interface ITypefaceExpandable is ITypeface {
 
     function operator() external view returns (address);
 
-    function setFontSourceHashes(Font[] memory fonts, bytes32[] memory hashes)
+    function setSourceHashes(Font[] memory fonts, bytes32[] memory hashes)
         external;
 
     function setOperator(address operator) external;

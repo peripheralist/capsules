@@ -102,7 +102,7 @@ abstract contract Typeface is ITypeface, ERC165 {
     /// @param font Font to set source for.
     /// @param source Font source as bytes.
     function setSource(Font calldata font, bytes calldata source) public {
-        require(!hasSource(font), "Typeface: font source already exists");
+        require(!hasSource(font), "Typeface: Source already exists");
 
         require(
             keccak256(source) == sourceHash(font),
@@ -123,7 +123,7 @@ abstract contract Typeface is ITypeface, ERC165 {
     /// @dev Length of fonts and hashes arrays must be equal. Each hash from hashes array will be set for the font with matching index in the fonts array.
     /// @param fonts Array of fonts to set hashes for.
     /// @param hashes Array of hashes to set for fonts.
-    function _setFontSourceHashes(Font[] memory fonts, bytes32[] memory hashes)
+    function _setSourceHashes(Font[] memory fonts, bytes32[] memory hashes)
         internal
     {
         require(
