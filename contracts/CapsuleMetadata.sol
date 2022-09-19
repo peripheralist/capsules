@@ -34,9 +34,9 @@ contract CapsuleMetadata is ICapsuleMetadata {
             image,
             '", "attributes": [{"trait_type": "Color", "value": "',
             _bytes3ToColorCode(capsule.color),
-            '"}, {"Pure": "',
+            '"}, {"trait_type": "Pure", "value": "',
             pureText,
-            '"}, {"Font": "',
+            '"}, {"trait_type": "Font", "value": "',
             Strings.toString(capsule.font.weight),
             '"}]}'
         );
