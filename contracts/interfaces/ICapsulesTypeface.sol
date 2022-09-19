@@ -13,5 +13,5 @@ pragma solidity ^0.8.8;
 import "./ITypefaceExpandable.sol";
 
 interface ICapsulesTypeface is ITypefaceExpandable {
-    function patron(Font calldata font) external view returns (address);
+    function patronOf(Font calldata font) external view returns (address);
 }

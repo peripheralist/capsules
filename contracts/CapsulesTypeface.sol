@@ -18,7 +18,7 @@ contract CapsulesTypeface is TypefaceExpandable {
     ICapsuleToken public immutable capsuleToken;
 
     /// Mapping of style => weight => address that stored the font.
-    mapping(string => mapping(uint256 => address)) private _patron;
+    mapping(string => mapping(uint256 => address)) private _patronOf;
 
     constructor(
         address _capsuleToken,
@@ -31,8 +31,8 @@ contract CapsulesTypeface is TypefaceExpandable {
     /// @notice Returns the address of the patron that stored a font.
     /// @param font Font to check patron of.
     /// @return address Address of font patron.
-    function patron(Font calldata font) external view returns (address) {
-        return _patron[font.style][font.weight];
+    function patronOf(Font calldata font) external view returns (address) {
+        return _patronOf[font.style][font.weight];
     }
 
     /// @notice Returns true if a unicode codepoint is supported by the Capsules typeface.
@@ -200,7 +200,7 @@ contract CapsulesTypeface is TypefaceExpandable {
         internal
         override(Typeface)
     {
-        _patron[font.style][font.weight] = msg.sender;
+        _patronOf[font.style][font.weight] = msg.sender;
 
         capsuleToken.mintPureColorForFont(msg.sender, font);
     }

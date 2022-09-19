@@ -251,7 +251,7 @@ describe("Capsules", async () => {
       const { owner } = await wallets();
 
       await expect(
-        await capsulesTypeface.patron({ weight: 400, style: "normal" })
+        await capsulesTypeface.patronOf({ weight: 400, style: "normal" })
       ).to.equal(owner.address);
     });
 
@@ -920,7 +920,7 @@ describe("Capsules", async () => {
       );
     });
 
-    it("Set valid royalty should succeed", async () => {
+    it("Set valid royalty as owner should succeed", async () => {
       const { owner } = await wallets();
 
       const ownerCapsuleToken = signingContract(capsuleToken, owner);
@@ -932,6 +932,32 @@ describe("Capsules", async () => {
         .withArgs(newRoyalty);
 
       return expect(await ownerCapsuleToken.royalty()).to.equal(newRoyalty);
+    });
+
+    it("setContractURI as non-owner should revert", async () => {
+      const { minter1 } = await wallets();
+
+      const minter1CapsuleToken = signingContract(capsuleToken, minter1);
+
+      return expect(
+        minter1CapsuleToken.setContractURI("asdf")
+      ).to.be.revertedWith("Ownable: caller is not the owner");
+    });
+
+    it("setContractURI as owner should succeed", async () => {
+      const { owner } = await wallets();
+
+      const ownerCapsuleToken = signingContract(capsuleToken, owner);
+
+      const newContractURI = "asdf";
+
+      await expect(ownerCapsuleToken.setContractURI(newContractURI))
+        .to.emit(capsuleToken, "SetContractURI")
+        .withArgs(newContractURI);
+
+      return expect(await ownerCapsuleToken.contractURI()).to.equal(
+        newContractURI
+      );
     });
 
     it("Pause as non-owner should revert", async () => {

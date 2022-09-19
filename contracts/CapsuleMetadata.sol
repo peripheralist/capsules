@@ -24,20 +24,20 @@ contract CapsuleMetadata is ICapsuleMetadata {
         pure
         returns (string memory)
     {
-        string memory pureText = "no";
-        if (capsule.isPure) pureText = "yes";
+        string memory pureText = "false";
+        if (capsule.isPure) pureText = "true";
 
         bytes memory metadata = abi.encodePacked(
             '{"name": "Capsule ',
             Strings.toString(capsule.id),
-            '", "description": "7,957 NFTs with unique colors and editable text rendered as SVGs on-chain. 7 pure colors are reserved for wallets that pay gas to store one of the 7 Capsules typeface fonts in the CapsulesTypeface contract.", "image": "',
+            '", "description": "7,957 tokens with unique colors and editable text rendered as SVGs on-chain. 7 pure colors are reserved for wallets that pay gas to store one of the 7 Capsules fonts in the CapsulesTypeface contract.", "image": "',
             image,
             '", "attributes": [{"trait_type": "Color", "value": "',
             _bytes3ToColorCode(capsule.color),
-            '"}, {"font": "',
-            Strings.toString(capsule.font.weight),
-            '"}, {"pure": "',
+            '"}, {"Pure": "',
             pureText,
+            '"}, {"Font": "',
+            Strings.toString(capsule.font.weight),
             '"}]}'
         );
 

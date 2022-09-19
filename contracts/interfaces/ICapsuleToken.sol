@@ -41,6 +41,7 @@ interface ICapsuleToken {
     event SetCapsuleFont(uint256 indexed id, Font font);
     event SetCapsuleRenderer(uint256 indexed id, address renderer);
     event SetCapsuleText(uint256 indexed id, bytes32[8] text);
+    event SetContractURI(string contractURI);
     event SetGiftCount(address _address, uint256 count);
     event Withdraw(address to, uint256 amount);
 
@@ -113,11 +114,15 @@ interface ICapsuleToken {
 
     function isValidRenderer(address renderer) external view returns (bool);
 
+    function contractURI() external view returns (string memory);
+
     function withdraw() external;
 
     function setFeeReceiver(address _feeReceiver) external;
 
     function setRoyalty(uint256 _royalty) external;
+
+    function setContractURI(string calldata _contractURI) external;
 
     function pause() external;
 

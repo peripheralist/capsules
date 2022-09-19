@@ -202,6 +202,9 @@ contract CapsuleToken is
     /// Numer of gift mints for addresses
     mapping(address => uint256) internal _giftCount;
 
+    /// Contract URI
+    string internal _contractURI;
+
     /* -------------------------------------------------------------------------- */
     /*           00000  0   0  00000  00000  0000   0   0   000   0               */
     /*           0       0 0     0    0      0   0  00  0  0   0  0               */
@@ -288,6 +291,12 @@ contract CapsuleToken is
                 capsuleOf(capsuleId),
                 svgOf(capsuleId)
             );
+    }
+
+    /// @notice Return contractURI.
+    /// @return contractURI contractURI
+    function contractURI() public view returns (string memory) {
+        return _contractURI;
     }
 
     /// @notice Return SVG image from the Capsule's renderer.
@@ -581,6 +590,12 @@ contract CapsuleToken is
         _setMetadata(_capsuleMetadata);
     }
 
+    /// @notice Allows the owner of this contract to update the contractURI.
+    /// @param __contractURI New contractURI.
+    function setContractURI(string calldata __contractURI) external onlyOwner {
+        _setContractURI(__contractURI);
+    }
+
     /// @notice Allows the owner of this contract to update the feeReceiver address.
     /// @param newFeeReceiver Address of new feeReceiver.
     function setFeeReceiver(address newFeeReceiver) external onlyOwner {
@@ -737,6 +752,12 @@ contract CapsuleToken is
         royalty = royaltyAmount;
 
         emit SetRoyalty(royaltyAmount);
+    }
+
+    function _setContractURI(string calldata __contractURI) internal {
+        _contractURI = __contractURI;
+
+        emit SetContractURI(__contractURI);
     }
 
     function _setFeeReceiver(address newFeeReceiver) internal {
