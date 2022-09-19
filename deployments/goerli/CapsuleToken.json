@@ -1,5 +1,5 @@
 {
-      "address": "0x8A41E75f7e4C209e74e16BCe289B2B153749e639", 
+      "address": "0x84B0c775Be222D9aB7bd91eB37dCCACE0Ffd5B5c", 
       "abi": [
   {
     "inputs": [
@@ -391,6 +391,19 @@
     "inputs": [
       {
         "indexed": false,
+        "internalType": "string",
+        "name": "contractURI",
+        "type": "string"
+      }
+    ],
+    "name": "SetContractURI",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
         "internalType": "address",
         "name": "renderer",
         "type": "address"
@@ -701,6 +714,19 @@
         "internalType": "bytes3",
         "name": "",
         "type": "bytes3"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "contractURI",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
       }
     ],
     "stateMutability": "view",
@@ -1331,6 +1357,19 @@
       }
     ],
     "name": "setCapsuleMetadata",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "__contractURI",
+        "type": "string"
+      }
+    ],
+    "name": "setContractURI",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

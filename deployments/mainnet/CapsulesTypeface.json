@@ -1,5 +1,5 @@
 {
-      "address": "0x7E3764691e25911A591D782E9baE6AF2b5A0Fa95", 
+      "address": "0xAd81b9F809331A5Eee2A2B023B58DD4b6656De22", 
       "abi": [
   {
     "inputs": [
@@ -220,7 +220,7 @@
         "type": "tuple"
       }
     ],
-    "name": "patron",
+    "name": "patronOf",
     "outputs": [
       {
         "internalType": "address",
