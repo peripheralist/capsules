@@ -262,6 +262,42 @@ describe("Capsules", async () => {
     });
   });
 
+  describe("Mint fonts", async () => {
+    before(async () => {
+      await deployContracts();
+      await unpause();
+    });
+
+    it("Should mint fonts", async () => {
+      const { owner } = await wallets();
+
+      // for (let i = 0; i < validHexes().length; i++) {
+      //   const b = validHexes()[i];
+      //   expect(b).to.equal(colorStringToBytes(await capsuleRenderer.test(b)));
+      //   console.log(i, b, await capsuleRenderer.test(b));
+      // }
+
+      for (let i = 1; i <= 7; i++) {
+        const weight = i * 100;
+        const src = Buffer.from(FONTS[weight as keyof typeof FONTS]);
+
+        await signingContract(capsulesTypeface, owner).setSource(
+          {
+            weight,
+            style: "normal",
+          },
+          src,
+          {
+            gasLimit: 30000000,
+          }
+        );
+
+        // Sanity check that all tokenURI will render
+        expect((await capsuleToken.tokenURI(i)).length).to.be.greaterThan(0);
+      }
+    });
+  });
+
   describe("Minting", async () => {
     before(async () => {
       const { owner } = await wallets();

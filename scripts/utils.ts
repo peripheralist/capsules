@@ -11,7 +11,6 @@ import {
   CapsuleRenderer,
   CapsuleToken,
 } from "../typechain-types";
-import { CapsulesToken } from "../typechain-types/CapsulesToken";
 import { CapsulesTypeface } from "../typechain-types/CapsulesTypeface";
 
 export const mintPrice = ethers.utils.parseEther("0.01");
@@ -285,3 +284,5 @@ export const signingContract = <C extends Contract>(
     contract.interface,
     signer ?? ethers.provider
   ) as C;
+
+export const colorStringToBytes = (str: string) => `0x${str.split("#")[1]}`;

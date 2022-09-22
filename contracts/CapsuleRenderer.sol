@@ -492,11 +492,19 @@ contract CapsuleRenderer is ICapsuleRenderer {
         returns (string memory o)
     {
         bytes memory hexCode = bytes(Strings.toHexString(uint24(b)));
-        o = "#";
+
         // Trim leading 0x from hexCode
-        for (uint256 i = 2; i < 8; i++) {
-            o = string.concat(o, string(abi.encodePacked(hexCode[i])));
+        for (uint256 i = 2; i < hexCode.length; i++) {
+            o = string(abi.encodePacked(o, hexCode[i]));
         }
+
+        // Pad start
+        while (bytes(o).length < 6) {
+            o = string.concat("00", o);
+        }
+
+        // Lead with #
+        return string.concat("#", o);
     }
 
     /// @notice Format bytes2 type as decimal unicode string for html.
