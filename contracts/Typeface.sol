@@ -87,7 +87,7 @@ abstract contract Typeface is ITypeface, ERC165 {
 
     /// @notice Allows the donation address to set a new donation address.
     /// @param __donationAddress New donation address.
-    function setDonationAddress(address __donationAddress) external {
+    function setDonationAddress(address __donationAddress) external onlyDonationAddress {
         _setDonationAddress(__donationAddress);
     }
 
