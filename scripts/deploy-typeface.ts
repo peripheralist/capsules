@@ -34,7 +34,7 @@ const writeDeploymentFiles = (
   );
 
   // Create deployments directory if it doesn't exist
-  const deployDir = `deployments/${network}`;
+  const deployDir = `deployments/typeface/${network}`;
   if (!fs.existsSync(deployDir)) {
     fs.mkdirSync(deployDir, { recursive: true });
   }
@@ -63,6 +63,17 @@ const writeDeploymentFiles = (
     chalk.yellow(`${deployDir}/${contractName}.*`),
     "\n"
   );
+};
+
+// Helper to get tx overrides for Optimism networks
+const getTxOverrides = (network: string) => {
+  const isOptimism = network === "optimism" || network === "optimismSepolia";
+  return isOptimism
+    ? {
+        maxPriorityFeePerGas: ethers.utils.parseUnits("1", "gwei"),
+        maxFeePerGas: ethers.utils.parseUnits("10", "gwei"),
+      }
+    : {};
 };
 
 async function main() {
@@ -113,6 +124,7 @@ async function main() {
   console.log(`📝 Setting source hashes for ${fonts.length} fonts...`);
   const setHashesTx = await capsulesTypeface.setSourceHashes(fonts, fontHashes, {
     gasLimit: 10000000, // 10M gas limit
+    ...getTxOverrides(network),
   });
   await setHashesTx.wait();
   console.log("✅ Source hashes set successfully\n");

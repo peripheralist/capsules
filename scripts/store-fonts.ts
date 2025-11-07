@@ -12,6 +12,28 @@ const fonts = Object.keys(FONTS).map((weight) => ({
   style: "normal",
 }));
 
+// Helper to get tx overrides based on network
+const getTxOverrides = (network: string) => {
+  const isOptimism = network === "optimism" || network === "optimismSepolia";
+  const isSepolia = network === "sepolia";
+
+  let overrides: any = {};
+
+  if (isOptimism) {
+    overrides.maxPriorityFeePerGas = ethers.utils.parseUnits("1", "gwei");
+    overrides.maxFeePerGas = ethers.utils.parseUnits("10", "gwei");
+  }
+
+  return overrides;
+};
+
+// Helper to get gas limit based on network
+const getGasLimit = (network: string) => {
+  const isSepolia = network === "sepolia";
+  // Sepolia has a lower block gas limit (~16.7M)
+  return isSepolia ? 15000000 : 25000000;
+};
+
 async function main() {
   const network = process.env.HARDHAT_NETWORK;
 
@@ -26,7 +48,7 @@ async function main() {
   );
 
   // Load deployment info
-  const deploymentPath = `deployments/${network}/CapsulesTypeface.json`;
+  const deploymentPath = `deployments/typeface/${network}/CapsulesTypeface.json`;
   if (!fs.existsSync(deploymentPath)) {
     throw new Error(
       `Deployment file not found at ${deploymentPath}. Please deploy the contract first using:\n  npx hardhat run scripts/deploy-typeface.ts --network ${network}`
@@ -84,7 +106,8 @@ async function main() {
         font,
         Buffer.from(fontData),
         {
-          gasLimit: 25000000, // 25M gas limit for storing fonts
+          gasLimit: getGasLimit(network),
+          ...getTxOverrides(network),
         }
       );
       const receipt = await setSourceTx.wait();
@@ -114,7 +137,9 @@ async function main() {
     console.log(
       `🔄 Transferring operator role to ${chalk.cyan(OWNER_ADDRESS)}...`
     );
-    const setOperatorTx = await capsulesTypeface.setOperator(OWNER_ADDRESS);
+    const setOperatorTx = await capsulesTypeface.setOperator(OWNER_ADDRESS, {
+      ...getTxOverrides(network),
+    });
     await setOperatorTx.wait();
     console.log("✅ Operator role transferred successfully\n");
   } else {

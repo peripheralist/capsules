@@ -70,11 +70,13 @@ module.exports = {
       url: "https://optimism-mainnet.infura.io/v3/" + infuraId,
       accounts: [deployerPk()],
       chainId: 10,
+      gasPrice: undefined, // Let the network determine gas price
     },
     optimismSepolia: {
       url: "https://optimism-sepolia.infura.io/v3/" + infuraId,
       accounts: [deployerPk()],
       chainId: 11155420,
+      gasPrice: undefined, // Let the network determine gas price
     },
     // Arbitrum
     arbitrum: {
