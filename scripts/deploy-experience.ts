@@ -6,7 +6,7 @@ import { ethers } from "hardhat";
 import {
   deployCapsuleMetadata,
   deployCapsuleRenderer,
-  deployCapsulesTypeface,
+  deployCapsulesTypefaceExperience,
   deployCapsuleToken,
   getDeployer,
 } from "./utils";
@@ -81,15 +81,15 @@ const main = async () => {
     }
   );
 
-  // Deploy CapsulesTypeface
-  const { contract: capsulesTypeface } = await deployCapsulesTypeface(
+  // Deploy CapsulesTypefaceExperience
+  const { contract: capsulesTypeface } = await deployCapsulesTypefaceExperience(
     expectedCapsuleTokenAddress,
     donationAddress,
     operatorAddress,
     true
   ).then((x) => {
     writeFiles(
-      "CapsulesTypeface",
+      "CapsulesTypefaceExperience",
       x.contract.address,
       x.args.map((a) => JSON.stringify(a))
     );

@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 
 /**
-  @title ITypeface
+  @title ITypefaceExpandable
 
   @author peri
 
-  @notice Interface for Typeface contract
+  @notice Interface for TypefaceExpandable contract
  */
 
 pragma solidity ^0.8.8;

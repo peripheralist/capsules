@@ -13,11 +13,27 @@ pragma solidity ^0.8.8;
 import "./interfaces/ICapsuleToken.sol";
 import "./TypefaceExpandable.sol";
 
-contract CapsulesTypeface is TypefaceExpandable {
+contract CapsulesTypefaceExperience is TypefaceExpandable {
+    /// Address of CapsuleToken contract
+    ICapsuleToken public immutable capsuleToken;
+
+    /// Mapping of style => weight => address that stored the font.
+    mapping(string => mapping(uint256 => address)) private _patronOf;
+
     constructor(
+        address _capsuleToken,
         address donationAddress,
         address operator
-    ) TypefaceExpandable("Capsules", donationAddress, operator) {}
+    ) TypefaceExpandable("Capsules", donationAddress, operator) {
+        capsuleToken = ICapsuleToken(_capsuleToken);
+    }
+
+    /// @notice Returns the address of the patron that stored a font.
+    /// @param font Font to check patron of.
+    /// @return address Address of font patron.
+    function patronOf(Font calldata font) external view returns (address) {
+        return _patronOf[font.style][font.weight];
+    }
 
     /// @notice Returns true if a unicode codepoint is supported by the Capsules typeface.
     /// @param cp Codepoint to check.
@@ -177,5 +193,15 @@ contract CapsulesTypeface is TypefaceExpandable {
             cp == 0x00ff04 ||
             (cp >= 0x00ffe0 && cp <= 0x00ffe1) ||
             (cp >= 0x00ffe5 && cp <= 0x00ffe6));
+    }
+
+    /// @dev Mint pure color Capsule token to sender when sender sets font source.
+    function _afterSetSource(Font calldata font, bytes calldata)
+        internal
+        override(Typeface)
+    {
+        _patronOf[font.style][font.weight] = msg.sender;
+
+        capsuleToken.mintPureColorForFont(msg.sender, font);
     }
 }

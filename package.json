@@ -3,11 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "deploy-local": "hardhat run scripts/deploy.ts --network localhost",
-    "deploy-rinkeby": "hardhat run scripts/deploy.ts --network rinkeby",
-    "deploy-kovan": "hardhat run scripts/deploy.ts --network kovan",
-    "deploy-goerli": "hardhat run scripts/deploy.ts --network goerli",
-    "deploy-mainnet": "hardhat run scripts/deploy.ts --network mainnet",
+    "deploy-local": "hardhat run scripts/deploy-experience.ts --network localhost",
+    "deploy-rinkeby": "hardhat run scripts/deploy-experience.ts --network rinkeby",
+    "deploy-kovan": "hardhat run scripts/deploy-experience.ts --network kovan",
+    "deploy-goerli": "hardhat run scripts/deploy-experience.ts --network goerli",
+    "deploy-mainnet": "hardhat run scripts/deploy-experience.ts --network mainnet",
     "test": "npx hardhat test"
   },
   "dependencies": {

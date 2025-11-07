@@ -10,8 +10,8 @@ import {
   CapsuleMetadata,
   CapsuleRenderer,
   CapsuleToken,
+  CapsulesTypefaceExperience,
 } from "../typechain-types";
-import { CapsulesTypeface } from "../typechain-types/CapsulesTypeface";
 
 export const mintPrice = ethers.utils.parseEther("0.01");
 
@@ -153,7 +153,7 @@ export async function wallets() {
   };
 }
 
-export async function deployCapsulesTypeface(
+export async function deployCapsulesTypefaceExperience(
   capsuleTokenAddress: string,
   donationAddress: string,
   operatorAddress: string,
@@ -161,19 +161,22 @@ export async function deployCapsulesTypeface(
 ) {
   const { deployer } = await wallets();
 
-  if (verbose) console.log("🪄 Deploying CapsulesTypeface...");
+  if (verbose) console.log("🪄 Deploying CapsulesTypefaceExperience...");
 
   // Initially set operator to deployer address so we can set hashes in this script
   const args = [capsuleTokenAddress, donationAddress, deployer.address];
 
-  const CapsulesTypeface = await ethers.getContractFactory("CapsulesTypeface");
-  const capsulesTypeface = (await CapsulesTypeface.deploy(
+  const CapsulesTypefaceExperience = await ethers.getContractFactory(
+    "CapsulesTypefaceExperience"
+  );
+  const capsulesTypeface = (await CapsulesTypefaceExperience.deploy(
     ...args
-  )) as CapsulesTypeface;
+  )) as CapsulesTypefaceExperience;
 
   if (verbose) {
     console.log(
-      "✅ Deployed CapsulesTypeface " + chalk.magenta(capsulesTypeface.address)
+      "✅ Deployed CapsulesTypefaceExperience " +
+        chalk.magenta(capsulesTypeface.address)
     );
   }
 

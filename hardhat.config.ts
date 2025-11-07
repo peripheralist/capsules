@@ -43,6 +43,51 @@ module.exports = {
     localhost: {
       url: "http://localhost:8545",
     },
+    // Ethereum
+    mainnet: {
+      url: "https://mainnet.infura.io/v3/" + infuraId,
+      accounts: [deployerPk()],
+      chainId: 1,
+    },
+    sepolia: {
+      url: "https://sepolia.infura.io/v3/" + infuraId,
+      accounts: [deployerPk()],
+      chainId: 11155111,
+    },
+    // Base
+    base: {
+      url: "https://mainnet.base.org",
+      accounts: [deployerPk()],
+      chainId: 8453,
+    },
+    baseSepolia: {
+      url: "https://sepolia.base.org",
+      accounts: [deployerPk()],
+      chainId: 84532,
+    },
+    // Optimism
+    optimism: {
+      url: "https://optimism-mainnet.infura.io/v3/" + infuraId,
+      accounts: [deployerPk()],
+      chainId: 10,
+    },
+    optimismSepolia: {
+      url: "https://optimism-sepolia.infura.io/v3/" + infuraId,
+      accounts: [deployerPk()],
+      chainId: 11155420,
+    },
+    // Arbitrum
+    arbitrum: {
+      url: "https://arbitrum-mainnet.infura.io/v3/" + infuraId,
+      accounts: [deployerPk()],
+      chainId: 42161,
+    },
+    arbitrumSepolia: {
+      url: "https://arbitrum-sepolia.infura.io/v3/" + infuraId,
+      accounts: [deployerPk()],
+      chainId: 421614,
+    },
+    // Legacy testnets (deprecated)
     rinkeby: {
       url: "https://rinkeby.infura.io/v3/" + infuraId,
       accounts: [deployerPk()],
@@ -55,19 +100,25 @@ module.exports = {
       url: "https://kovan.infura.io/v3/" + infuraId,
       accounts: [deployerPk()],
     },
-    mainnet: {
-      url: "https://mainnet.infura.io/v3/" + infuraId,
-      accounts: [deployerPk()],
-      gasPrice: 10e9,
-    },
   },
   etherscan: {
     apiKey: {
+      // Ethereum
+      mainnet: `5NE8T9T1Q6PT9DTHC5DTB8GU4BK76W7SMQ`,
+      sepolia: `5NE8T9T1Q6PT9DTHC5DTB8GU4BK76W7SMQ`,
+      // Base (uses Basescan API key)
+      base: process.env.BASESCAN_API_KEY || "",
+      baseSepolia: process.env.BASESCAN_API_KEY || "",
+      // Optimism (uses Optimistic Etherscan API key)
+      optimism: process.env.OPTIMISM_API_KEY || "",
+      optimismSepolia: process.env.OPTIMISM_API_KEY || "",
+      // Arbitrum (uses Arbiscan API key)
+      arbitrum: process.env.ARBISCAN_API_KEY || "",
+      arbitrumSepolia: process.env.ARBISCAN_API_KEY || "",
+      // Legacy testnets
       rinkeby: `5NE8T9T1Q6PT9DTHC5DTB8GU4BK76W7SMQ`,
       goerli: `5NE8T9T1Q6PT9DTHC5DTB8GU4BK76W7SMQ`,
       kovan: `5NE8T9T1Q6PT9DTHC5DTB8GU4BK76W7SMQ`,
-      mainnet: `5NE8T9T1Q6PT9DTHC5DTB8GU4BK76W7SMQ`,
-      // mainnet: `${process.env.ETHERSCAN_API_KEY}`,
     },
   },
   solidity: {
