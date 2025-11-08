@@ -31,7 +31,8 @@ const getTxOverrides = (network: string) => {
 const getGasLimit = (network: string) => {
   const isSepolia = network === "sepolia";
   // Sepolia has a lower block gas limit (~16.7M)
-  return isSepolia ? 15000000 : 25000000;
+  // Using max gas limit (16777216) for Sepolia
+  return isSepolia ? 16777216 : 25000000;
 };
 
 async function main() {
@@ -86,6 +87,10 @@ async function main() {
   let totalGasUsed = ethers.BigNumber.from(0);
   const startTime = Date.now();
 
+  const alreadyStored: number[] = [];
+  const failed: number[] = [];
+  const stored: number[] = [];
+
   for (let i = 0; i < fonts.length; i++) {
     const font = fonts[i];
     const fontData = FONTS[font.weight as keyof typeof FONTS];
@@ -99,6 +104,7 @@ async function main() {
       const hasSource = await capsulesTypeface.hasSource(font);
       if (hasSource) {
         console.log(chalk.blue("⊙ Already stored, skipping"));
+        alreadyStored.push(font.weight);
         continue;
       }
 
@@ -113,23 +119,38 @@ async function main() {
       const receipt = await setSourceTx.wait();
 
       totalGasUsed = totalGasUsed.add(receipt.gasUsed);
+      stored.push(font.weight);
 
       console.log(
         chalk.green("✓") + ` Gas: ${receipt.gasUsed.toString()}`
       );
     } catch (error: any) {
-      console.log(chalk.red("✗ Failed"));
-      console.error(`Error storing font ${font.weight}:`, error.message);
-      throw error;
+      console.log(chalk.red("✗ Failed") + ` - ${error.message || error.reason || "Unknown error"}`);
+      failed.push(font.weight);
+      // Continue to next font instead of throwing
+      continue;
     }
   }
 
   const endTime = Date.now();
   const duration = ((endTime - startTime) / 1000).toFixed(2);
 
-  console.log("\n" + chalk.green("✅ All font sources stored successfully!\n"));
-  console.log("📊 Statistics:");
-  console.log(`   Total Gas Used: ${chalk.yellow(totalGasUsed.toString())}`);
+  console.log("\n" + chalk.green("✅ Font storage complete!\n"));
+  console.log("📊 Summary:");
+
+  if (stored.length > 0) {
+    console.log(`   ${chalk.green("Stored:")} ${stored.join(", ")}`);
+  }
+
+  if (alreadyStored.length > 0) {
+    console.log(`   ${chalk.blue("Already stored:")} ${alreadyStored.join(", ")}`);
+  }
+
+  if (failed.length > 0) {
+    console.log(`   ${chalk.red("Failed:")} ${failed.join(", ")}`);
+  }
+
+  console.log(`\n   Total Gas Used: ${chalk.yellow(totalGasUsed.toString())}`);
   console.log(`   Time Elapsed:   ${chalk.yellow(duration + "s")}\n`);
 
   // Check if we should transfer operator
