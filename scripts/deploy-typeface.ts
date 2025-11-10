@@ -109,7 +109,11 @@ async function main() {
 
   const capsulesTypeface = await CapsulesTypeface.deploy(
     DONATION_ADDRESS,
-    OPERATOR_ADDRESS
+    OPERATOR_ADDRESS,
+    {
+      gasLimit: 5000000, // 5M gas limit for deployment
+      ...getTxOverrides(network),
+    }
   );
 
   await capsulesTypeface.deployed();
@@ -123,7 +127,7 @@ async function main() {
   // Step 2: Set source hashes
   console.log(`📝 Setting source hashes for ${fonts.length} fonts...`);
   const setHashesTx = await capsulesTypeface.setSourceHashes(fonts, fontHashes, {
-    gasLimit: 10000000, // 10M gas limit
+    gasLimit: 3000000, // 3M gas limit (hashes are small)
     ...getTxOverrides(network),
   });
   await setHashesTx.wait();
